@@ -423,39 +423,71 @@ css_content = f"""
 
     /* High-Contrast Segmented Timeframe Switcher */
     div[data-testid="stRadio"] {{
-        display: flex;
-        justify-content: center;
-        margin: 12px 0 14px 0;
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        margin: 10px auto 14px auto !important;
+        width: 100% !important;
     }}
     div[data-testid="stRadio"] > div[role="radiogroup"] {{
-        display: flex;
-        gap: 6px;
-        flex-wrap: wrap;
-        justify-content: center;
-        background-color: #121214;
-        padding: 5px;
-        border-radius: 8px;
-        border: 1px solid #26262B;
+        display: grid !important;
+        grid-template-columns: repeat(8, minmax(0, 1fr)) !important;
+        gap: 6px !important;
+        background-color: #121214 !important;
+        padding: 5px !important;
+        border-radius: 8px !important;
+        border: 1px solid #26262B !important;
+        width: 100% !important;
+        max-width: 860px !important;
+        box-sizing: border-box !important;
     }}
     /* Inactive State */
     div[data-testid="stRadio"] label {{
         background-color: #18181B !important;
         border: 1px solid #2E2E34 !important;
         border-radius: 6px !important;
-        padding: 6px 14px !important;
+        padding: 7px 6px !important;
         margin: 0 !important;
         cursor: pointer !important;
         transition: all 0.2s ease-in-out !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        text-align: center !important;
+        width: 100% !important;
+        min-width: 0 !important;
+        box-sizing: border-box !important;
     }}
     div[data-testid="stRadio"] label p,
     div[data-testid="stRadio"] label div {{
         color: #FFFFFF !important;
-        font-weight: 600 !important;
-        font-size: 0.86rem !important;
+        font-weight: 700 !important;
+        font-size: 0.82rem !important;
+        white-space: nowrap !important;
+        text-align: center !important;
+        margin: 0 !important;
     }}
-    /* Hide default radio circle icon */
-    div[data-testid="stRadio"] label > div:first-child {{
+    /* Completely hide default radio circle icon & markers across all Streamlit/BaseWeb versions */
+    div[data-testid="stRadio"] label > div:first-child:not([data-testid="stMarkdownContainer"]),
+    div[data-testid="stRadio"] label > span:first-child:not([data-testid="stMarkdownContainer"]),
+    div[data-testid="stRadio"] [data-baseweb="radio"] > div:first-child:not([data-testid="stMarkdownContainer"]),
+    div[data-testid="stRadio"] [data-baseweb="radio"] > span:first-child,
+    div[data-testid="stRadio"] input[type="radio"],
+    div[data-testid="stRadio"] input[type="radio"] + div,
+    div[data-testid="stRadio"] input[type="radio"] ~ div:not([data-testid="stMarkdownContainer"]),
+    div[data-testid="stRadio"] [aria-hidden="true"],
+    div[data-testid="stRadio"] svg {{
         display: none !important;
+        width: 0 !important;
+        height: 0 !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: none !important;
+        position: absolute !important;
+        left: -9999px !important;
+        pointer-events: none !important;
     }}
     /* Active State (Brand Yellow) */
     div[data-testid="stRadio"] label:has(input:checked) {{
@@ -704,6 +736,38 @@ css_content = f"""
         font-size: 0.76rem;
     }}
 
+    /* Tablet & Medium Screens (Max-Width: 768px) - 4 Timeframes per row across 2 rows */
+    @media (max-width: 768px) {{
+        div[data-testid="stRadio"] > div[role="radiogroup"] {{
+            display: grid !important;
+            grid-template-columns: repeat(4, 1fr) !important;
+            grid-template-rows: repeat(2, auto) !important;
+            gap: 5px !important;
+            padding: 5px !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            box-sizing: border-box !important;
+        }}
+        div[data-testid="stRadio"] label {{
+            width: 100% !important;
+            min-width: 0 !important;
+            padding: 7px 2px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            text-align: center !important;
+            box-sizing: border-box !important;
+        }}
+        div[data-testid="stRadio"] label p,
+        div[data-testid="stRadio"] label div {{
+            font-size: 0.72rem !important;
+            font-weight: 700 !important;
+            white-space: nowrap !important;
+            text-align: center !important;
+            margin: 0 !important;
+        }}
+    }}
+
     /* =========================================================
        MOBILE VIEWPORT OPTIMISATIONS (MAX-WIDTH: 600PX)
        Strict containment, 3-tiles per row, zero overlap
@@ -717,18 +781,32 @@ css_content = f"""
             padding-top: 0.8rem !important;
         }}
         div[data-testid="stRadio"] > div[role="radiogroup"] {{
+            display: grid !important;
+            grid-template-columns: repeat(4, 1fr) !important;
+            grid-template-rows: repeat(2, auto) !important;
             gap: 4px !important;
             padding: 4px !important;
-            justify-content: center !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            box-sizing: border-box !important;
         }}
         div[data-testid="stRadio"] label {{
-            padding: 5px 8px !important;
-            min-width: 38px !important;
+            width: 100% !important;
+            min-width: 0 !important;
+            padding: 6px 1px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
             text-align: center !important;
+            box-sizing: border-box !important;
         }}
         div[data-testid="stRadio"] label p,
         div[data-testid="stRadio"] label div {{
-            font-size: 0.76rem !important;
+            font-size: 0.67rem !important;
+            font-weight: 700 !important;
+            white-space: nowrap !important;
+            text-align: center !important;
+            margin: 0 !important;
         }}
         .heatmap-grid {{
             grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
@@ -1080,19 +1158,36 @@ def fetch_ticker_data(ticker):
         if ticker.upper() == "SPCX":
             market_cap = 1_940_000_000_000.0
 
+        r_1d = ((current_price - p_1d) / p_1d) * 100.0 if p_1d != 0 else 0.0
+        r_1w = ((current_price - p_1w) / p_1w) * 100.0 if p_1w != 0 else 0.0
+        r_1m = ((current_price - p_1m) / p_1m) * 100.0 if p_1m != 0 else 0.0
+        r_3m = ((current_price - p_3m) / p_3m) * 100.0 if p_3m != 0 else 0.0
+        r_6m = ((current_price - p_6m) / p_6m) * 100.0 if p_6m != 0 else 0.0
+        r_ytd = ((current_price - p_ytd) / p_ytd) * 100.0 if p_ytd != 0 else 0.0
+        r_1y = ((current_price - p_1y) / p_1y) * 100.0 if p_1y != 0 else 0.0
+        r_5y = ((current_price - p_5y) / p_5y) * 100.0 if p_5y != 0 else 0.0
+
         return {
             "name": format_display_name(ticker, info),
             "price": current_price,
             "currency": currency,
             "quote_type": str(quote_type).upper(),
-            "1D": ((current_price - p_1d) / p_1d) * 100.0 if p_1d != 0 else 0.0,
-            "1W": ((current_price - p_1w) / p_1w) * 100.0 if p_1w != 0 else 0.0,
-            "1M": ((current_price - p_1m) / p_1m) * 100.0 if p_1m != 0 else 0.0,
-            "3M": ((current_price - p_3m) / p_3m) * 100.0 if p_3m != 0 else 0.0,
-            "6M": ((current_price - p_6m) / p_6m) * 100.0 if p_6m != 0 else 0.0,
-            "YTD": ((current_price - p_ytd) / p_ytd) * 100.0 if p_ytd != 0 else 0.0,
-            "1Y": ((current_price - p_1y) / p_1y) * 100.0 if p_1y != 0 else 0.0,
-            "5Y": ((current_price - p_5y) / p_5y) * 100.0 if p_5y != 0 else 0.0,
+            "1D": r_1d,
+            "1 Day": r_1d,
+            "1W": r_1w,
+            "1 Week": r_1w,
+            "1M": r_1m,
+            "1 Month": r_1m,
+            "3M": r_3m,
+            "3 Months": r_3m,
+            "6M": r_6m,
+            "6 Months": r_6m,
+            "YTD": r_ytd,
+            "1Y": r_1y,
+            "1 Year": r_1y,
+            "5Y": r_5y,
+            "5 Year": r_5y,
+            "5 Years": r_5y,
             "marketCap": market_cap,
             "volume": daily_volume,
             "fifty_two_week_high": fifty_two_week_high,
@@ -1245,15 +1340,13 @@ with st.expander(
 
             st.markdown('<div style="margin: 8px 0;"></div>', unsafe_allow_html=True)
 
-# 9. Timeframe Switcher (Symmetrically Centered)
-col_tf_l, col_tf_c, col_tf_r = st.columns([1.5, 7.0, 1.5])
-with col_tf_c:
-    timeframe = st.radio(
-        "Select Timeframe",
-        options=["1D", "1W", "1M", "3M", "6M", "YTD", "1Y", "5Y"],
-        horizontal=True,
-        label_visibility="collapsed",
-    )
+# 9. Timeframe Switcher (Symmetrically Centered: 4 per row on mobile, full word labels)
+timeframe = st.radio(
+    "Select Timeframe",
+    options=["1 Day", "1 Week", "1 Month", "3 Months", "6 Months", "YTD", "1 Year", "5 Year"],
+    horizontal=True,
+    label_visibility="collapsed",
+)
 
 # 10. Asset Categorisation Definitions
 KNOWN_ETFS = {"QQQ", "SPY", "SMH", "SOXX", "SMGB.L", "XNAQ.L", "VUAG.L", "EQQQ.L", "VUSA.L", "IITU.L", "VWRP.L", "VWRL.L"}
