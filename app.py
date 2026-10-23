@@ -421,32 +421,62 @@ css_content = f"""
         color: #FACC15 !important;
     }}
 
-    /* High-Contrast Segmented Timeframe Switcher */
+    /* High-Contrast Segmented Timeframe Switcher (Perfect Symmetrical Centering) */
     div[data-testid="stRadio"] {{
         display: flex !important;
         justify-content: center !important;
         align-items: center !important;
         margin: 10px auto 14px auto !important;
         width: 100% !important;
+        text-align: center !important;
     }}
+    /* Completely hide top widget label to eliminate ghost box on the left */
+    div[data-testid="stRadio"] > label,
+    div[data-testid="stRadio"] [data-testid="stWidgetLabel"],
+    div[data-testid="stRadio"] label:not([data-testid="stRadioOption"]) {{
+        display: none !important;
+        width: 0 !important;
+        height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: none !important;
+        position: absolute !important;
+        left: -9999px !important;
+        visibility: hidden !important;
+    }}
+    /* Radio group grid container (Centered 4x2 on all viewports) */
+    div[data-testid="stRadioGroup"],
     div[data-testid="stRadio"] > div[role="radiogroup"] {{
         display: grid !important;
-        grid-template-columns: repeat(8, minmax(0, 1fr)) !important;
+        grid-template-columns: repeat(4, 1fr) !important;
+        grid-template-rows: repeat(2, auto) !important;
         gap: 6px !important;
         background-color: #121214 !important;
-        padding: 5px !important;
+        padding: 6px !important;
         border-radius: 8px !important;
         border: 1px solid #26262B !important;
         width: 100% !important;
-        max-width: 860px !important;
+        max-width: 620px !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
         box-sizing: border-box !important;
     }}
-    /* Inactive State */
-    div[data-testid="stRadio"] label {{
+    /* Individual option wrapper */
+    div[data-testid="stRadioGroup"] > div {{
+        display: flex !important;
+        width: 100% !important;
+        min-width: 0 !important;
+        justify-content: center !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }}
+    /* Inactive State - The Pill */
+    div[data-testid="stRadioOption"],
+    div[data-testid="stRadioGroup"] label {{
         background-color: #18181B !important;
         border: 1px solid #2E2E34 !important;
         border-radius: 6px !important;
-        padding: 7px 6px !important;
+        padding: 8px 4px !important;
         margin: 0 !important;
         cursor: pointer !important;
         transition: all 0.2s ease-in-out !important;
@@ -458,25 +488,29 @@ css_content = f"""
         min-width: 0 !important;
         box-sizing: border-box !important;
     }}
-    div[data-testid="stRadio"] label p,
-    div[data-testid="stRadio"] label div {{
+    /* Typography inside the Pill */
+    div[data-testid="stRadioOption"] [data-testid="stMarkdownContainer"],
+    div[data-testid="stRadioOption"] p,
+    div[data-testid="stRadioGroup"] label p {{
         color: #FFFFFF !important;
         font-weight: 700 !important;
-        font-size: 0.82rem !important;
+        font-size: 0.78rem !important;
         white-space: nowrap !important;
         text-align: center !important;
         margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
     }}
-    /* Completely hide default radio circle icon & markers across all Streamlit/BaseWeb versions */
-    div[data-testid="stRadio"] label > div:first-child:not([data-testid="stMarkdownContainer"]),
-    div[data-testid="stRadio"] label > span:first-child:not([data-testid="stMarkdownContainer"]),
-    div[data-testid="stRadio"] [data-baseweb="radio"] > div:first-child:not([data-testid="stMarkdownContainer"]),
-    div[data-testid="stRadio"] [data-baseweb="radio"] > span:first-child,
+    /* Completely hide radio circles, dots, marks, SVGs across BaseWeb/Streamlit versions */
+    div[data-testid="stRadio"] div[class*="e1dm8mpf4"],
+    div[data-testid="stRadio"] div[class*="e1dm8mpf5"],
+    div[data-testid="stRadioOption"] > div > div:first-child:not([data-testid="stMarkdownContainer"]),
+    div[data-testid="stRadioOption"] label > div:first-child:not([data-testid="stMarkdownContainer"]),
+    div[data-testid="stRadioOption"] svg,
+    div[data-testid="stRadioOption"] input[type="radio"],
     div[data-testid="stRadio"] input[type="radio"],
     div[data-testid="stRadio"] input[type="radio"] + div,
-    div[data-testid="stRadio"] input[type="radio"] ~ div:not([data-testid="stMarkdownContainer"]),
-    div[data-testid="stRadio"] [aria-hidden="true"],
-    div[data-testid="stRadio"] svg {{
+    div[data-testid="stRadio"] [aria-hidden="true"] {{
         display: none !important;
         width: 0 !important;
         height: 0 !important;
@@ -489,14 +523,20 @@ css_content = f"""
         left: -9999px !important;
         pointer-events: none !important;
     }}
-    /* Active State (Brand Yellow) */
-    div[data-testid="stRadio"] label:has(input:checked) {{
+    /* Active State (Signature Brand Yellow #FACC15) */
+    div[data-testid="stRadioGroup"] > div:has(input:checked) [data-testid="stRadioOption"],
+    div[data-testid="stRadioOption"]:has(input:checked),
+    div[data-testid="stRadioGroup"] label:has(input:checked),
+    div[data-testid="stRadioOption"][data-selected="true"] {{
         background-color: #FACC15 !important;
+        background: #FACC15 !important;
         border-color: #EAB308 !important;
         box-shadow: 0 0 12px rgba(250, 204, 21, 0.45) !important;
     }}
-    div[data-testid="stRadio"] label:has(input:checked) p,
-    div[data-testid="stRadio"] label:has(input:checked) div {{
+    div[data-testid="stRadioGroup"] > div:has(input:checked) [data-testid="stRadioOption"] p,
+    div[data-testid="stRadioOption"]:has(input:checked) p,
+    div[data-testid="stRadioGroup"] label:has(input:checked) p,
+    div[data-testid="stRadioOption"][data-selected="true"] p {{
         color: #000000 !important;
         font-weight: 800 !important;
     }}
@@ -515,17 +555,50 @@ css_content = f"""
         color: #FACC15 !important;
     }}
 
-    /* Toggle Switch Styling */
-    div[data-testid="stToggle"] {{
-        display: flex;
-        align-items: center;
-        height: 100%;
+    /* =========================================================
+       EXTENDED HOURS TOGGLE - FORCE BRAND YELLOW (#FACC15)
+       ========================================================= */
+    div[data-testid="stToggle"],
+    div[data-testid="stCheckbox"] {{
+        display: flex !important;
+        align-items: center !important;
+        height: 100% !important;
     }}
-    div[data-testid="stToggle"] label {{
+    div[data-testid="stToggle"] label,
+    div[data-testid="stCheckbox"] label {{
         color: #E5E7EB !important;
         font-size: 0.82rem !important;
         font-weight: 600 !important;
         cursor: pointer !important;
+    }}
+    /* Toggle switch track when checked (ON) */
+    div[data-testid="stCheckbox"]:has(input:checked) label > div:first-of-type,
+    div[data-testid="stCheckbox"] label[data-selected="true"] > div:first-of-type,
+    div[data-testid="stCheckbox"] input:checked ~ div,
+    div[data-testid="stCheckbox"] input:checked + div,
+    div[data-testid="stCheckbox"]:has(input:checked) div[class*="e1ap2qgk7"],
+    div[data-testid="stCheckbox"] label[data-selected="true"] div[class*="e1ap2qgk7"],
+    div[data-testid="stToggle"]:has(input:checked) label > div:first-of-type,
+    div[data-testid="stToggle"] label[data-selected="true"] > div:first-of-type,
+    div[data-testid="stToggle"] input:checked ~ div,
+    div[data-testid="stToggle"] input:checked + div,
+    div[class*="st-key-frag_toggle_ext"]:has(input:checked) label > div:first-of-type,
+    div[class*="st-key-frag_toggle_ext"] label[data-selected="true"] > div:first-of-type,
+    div[class*="st-key-frag_toggle_ext"] input:checked ~ div,
+    div[class*="st-key-frag_toggle_ext"] div[data-selected="true"] {{
+        background-color: #FACC15 !important;
+        background: #FACC15 !important;
+        border-color: #EAB308 !important;
+        box-shadow: 0 0 10px rgba(250, 204, 21, 0.45) !important;
+    }}
+    /* Toggle switch sliding knob (thumb) when checked (ON) */
+    div[data-testid="stCheckbox"]:has(input:checked) label > div:first-of-type > div,
+    div[data-testid="stCheckbox"] label[data-selected="true"] > div:first-of-type > div,
+    div[data-testid="stToggle"]:has(input:checked) label > div:first-of-type > div,
+    div[data-testid="stToggle"] label[data-selected="true"] > div:first-of-type > div,
+    div[class*="st-key-frag_toggle_ext"]:has(input:checked) label > div:first-of-type > div {{
+        background-color: #FFFFFF !important;
+        background: #FFFFFF !important;
     }}
 
     /* 6-to-a-Row Centered Grid Layout (Zero Overflow) */
@@ -738,6 +811,7 @@ css_content = f"""
 
     /* Tablet & Medium Screens (Max-Width: 768px) - 4 Timeframes per row across 2 rows */
     @media (max-width: 768px) {{
+        div[data-testid="stRadioGroup"],
         div[data-testid="stRadio"] > div[role="radiogroup"] {{
             display: grid !important;
             grid-template-columns: repeat(4, 1fr) !important;
@@ -745,10 +819,13 @@ css_content = f"""
             gap: 5px !important;
             padding: 5px !important;
             width: 100% !important;
-            max-width: 100% !important;
+            max-width: 540px !important;
+            margin-left: auto !important;
+            margin-right: auto !important;
             box-sizing: border-box !important;
         }}
-        div[data-testid="stRadio"] label {{
+        div[data-testid="stRadioOption"],
+        div[data-testid="stRadioGroup"] label {{
             width: 100% !important;
             min-width: 0 !important;
             padding: 7px 2px !important;
@@ -758,9 +835,9 @@ css_content = f"""
             text-align: center !important;
             box-sizing: border-box !important;
         }}
-        div[data-testid="stRadio"] label p,
-        div[data-testid="stRadio"] label div {{
-            font-size: 0.72rem !important;
+        div[data-testid="stRadioOption"] p,
+        div[data-testid="stRadioGroup"] label p {{
+            font-size: 0.70rem !important;
             font-weight: 700 !important;
             white-space: nowrap !important;
             text-align: center !important;
@@ -780,33 +857,46 @@ css_content = f"""
             padding-right: 8px !important;
             padding-top: 0.8rem !important;
         }}
+        div[data-testid="stRadio"] {{
+            margin-left: auto !important;
+            margin-right: auto !important;
+            width: 100% !important;
+            display: flex !important;
+            justify-content: center !important;
+        }}
+        div[data-testid="stRadioGroup"],
         div[data-testid="stRadio"] > div[role="radiogroup"] {{
             display: grid !important;
             grid-template-columns: repeat(4, 1fr) !important;
             grid-template-rows: repeat(2, auto) !important;
             gap: 4px !important;
             padding: 4px !important;
-            width: 100% !important;
+            width: calc(100% - 4px) !important;
             max-width: 100% !important;
+            margin-left: auto !important;
+            margin-right: auto !important;
             box-sizing: border-box !important;
         }}
-        div[data-testid="stRadio"] label {{
+        div[data-testid="stRadioOption"],
+        div[data-testid="stRadioGroup"] label {{
             width: 100% !important;
             min-width: 0 !important;
-            padding: 6px 1px !important;
+            padding: 7px 1px !important;
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
             text-align: center !important;
             box-sizing: border-box !important;
+            border-radius: 5px !important;
         }}
-        div[data-testid="stRadio"] label p,
-        div[data-testid="stRadio"] label div {{
-            font-size: 0.67rem !important;
+        div[data-testid="stRadioOption"] p,
+        div[data-testid="stRadioGroup"] label p {{
+            font-size: clamp(0.55rem, 2.2vw, 0.67rem) !important;
             font-weight: 700 !important;
             white-space: nowrap !important;
             text-align: center !important;
             margin: 0 !important;
+            letter-spacing: -0.2px !important;
         }}
         .heatmap-grid {{
             grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
@@ -1183,6 +1273,8 @@ def fetch_ticker_data(ticker):
             "6M": r_6m,
             "6 Months": r_6m,
             "YTD": r_ytd,
+            "Year to Date": r_ytd,
+            "Year-to-Date": r_ytd,
             "1Y": r_1y,
             "1 Year": r_1y,
             "5Y": r_5y,
@@ -1343,7 +1435,7 @@ with st.expander(
 # 9. Timeframe Switcher (Symmetrically Centered: 4 per row on mobile, full word labels)
 timeframe = st.radio(
     "Select Timeframe",
-    options=["1 Day", "1 Week", "1 Month", "3 Months", "6 Months", "YTD", "1 Year", "5 Year"],
+    options=["1 Day", "1 Week", "1 Month", "3 Months", "6 Months", "Year to Date", "1 Year", "5 Year"],
     horizontal=True,
     label_visibility="collapsed",
 )
