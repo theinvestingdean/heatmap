@@ -228,13 +228,25 @@ css_content = f"""
         width: 100% !important;
     }}
 
-    /* Perfectly Center and Constrain Streamlit Page Container */
+    /* Hide default Streamlit header and GitHub icon on deployed app */
+    header[data-testid="stHeader"] {{
+        display: none !important;
+        visibility: hidden !important;
+        background: transparent !important;
+    }}
+
+    /* Ensure the top right toolbar (if any) doesn't force a white background */
+    .stApp > header {{
+        background-color: transparent !important;
+    }}
+
+    /* Push the main app container down slightly to space out the title */
     .block-container,
     div[data-testid="stAppViewBlockContainer"],
     section.main > div.block-container {{
         max-width: 1380px !important;
         width: 100% !important;
-        padding-top: 1.5rem !important;
+        padding-top: 3.5rem !important;
         padding-bottom: 3rem !important;
         padding-left: 20px !important;
         padding-right: 20px !important;
@@ -264,11 +276,10 @@ css_content = f"""
         color: #A1A1AA !important;
         font-size: 0.78rem !important;
         font-weight: 700 !important;
-        letter-spacing: 1.6px !important;
+        letter-spacing: 1.2px !important;
         padding: 10px 16px !important;
         border-radius: 8px !important;
         transition: color 0.2s ease !important;
-        text-transform: uppercase;
     }}
     [data-testid="stExpander"] summary:hover {{
         color: #FACC15 !important;
@@ -908,7 +919,7 @@ css_content = f"""
         section.main > div.block-container {{
             padding-left: 8px !important;
             padding-right: 8px !important;
-            padding-top: 0.8rem !important;
+            padding-top: 3.5rem !important;
         }}
         div[data-testid="stElementContainer"]:has(div[data-testid="stRadio"]),
         div[data-testid="stElementContainer"]:has(.stRadio),
@@ -1360,7 +1371,7 @@ def fetch_ticker_data(ticker):
 st.markdown(
     """
     <div style="text-align: center; margin-bottom: 16px;">
-        <h1 style="margin: 0; font-size: 2.3rem; font-weight: 800; color: #FFFFFF; letter-spacing: -0.5px;">The Investing Dean Heat Map</h1>
+        <h1 style="margin: 15px 0 0 0; font-size: 2.3rem; font-weight: 800; color: #FFFFFF; letter-spacing: -0.5px;">The Investing Dean Heat Map</h1>
         <p style="margin: 4px 0 0 0; color: #888888; font-size: 0.82rem; letter-spacing: 2px; font-weight: 600;">INSTITUTIONAL MULTI-ASSET REAL-TIME VISUALISER</p>
     </div>
     """,
@@ -1370,7 +1381,7 @@ st.markdown(
 # 8. Institutional Collapsible Watchlist & Style Panel
 active_count = len(st.session_state.active_tickers)
 with st.expander(
-    f"WATCHLIST CONFIGURATION & STYLING  •  {active_count} ASSETS MONITORED",
+    f"⚙️ Watchlist Configuration & Styling (Click to Expand)  •  {active_count} ASSETS MONITORED",
     expanded=False,
 ):
     tab_assets, tab_styles = st.tabs(["PORTFOLIO ASSETS", "TYPOGRAPHY STYLE SHOWCASE"])
@@ -1530,10 +1541,10 @@ def render_heatmap_grid(
     # Action Bar inside Fragment: Refresh button, Snapshot timestamp, Extended Hours toggle & Sort By dropdown
     col_bar_l, col_bar_c, col_bar_r = st.columns([1.5, 7.0, 1.5])
     with col_bar_c:
-        frag_c1, frag_c2, frag_c3, frag_c4 = st.columns([1.0, 2.1, 1.6, 2.3])
+        frag_c1, frag_c2, frag_c3, frag_c4 = st.columns([1.8, 1.8, 1.4, 2.0])
 
         with frag_c1:
-            if st.button("🔄 Refresh", use_container_width=True, key="frag_refresh_btn"):
+            if st.button("🔄 Refresh Market Data", use_container_width=True, key="frag_refresh_btn"):
                 st.cache_data.clear()
 
         with frag_c2:
