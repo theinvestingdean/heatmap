@@ -484,6 +484,7 @@ css_content = f"""
         max-width: 580px !important;
         margin-left: auto !important;
         margin-right: auto !important;
+        margin-bottom: 14px !important;
         box-sizing: border-box !important;
     }}
 
@@ -1214,6 +1215,11 @@ def fetch_ticker_data(ticker):
         t = yf.Ticker(ticker)
         # Fetch 5Y history with nominal prices (matching Yahoo Finance web UI)
         hist = t.history(period="5y", auto_adjust=False)
+        if hist.empty:
+            return None
+        # Discard any incomplete or provisional candles where Close is missing or zero (common in delayed ETF reporting)
+        hist = hist.dropna(subset=["Close"])
+        hist = hist[hist["Close"] > 0]
         if hist.empty or len(hist) < 2:
             return None
 
@@ -1325,14 +1331,14 @@ def fetch_ticker_data(ticker):
         if ticker.upper() == "SPCX":
             market_cap = 1_940_000_000_000.0
 
-        r_1d = ((current_price - p_1d) / p_1d) * 100.0 if p_1d != 0 else 0.0
-        r_1w = ((current_price - p_1w) / p_1w) * 100.0 if p_1w != 0 else 0.0
-        r_1m = ((current_price - p_1m) / p_1m) * 100.0 if p_1m != 0 else 0.0
-        r_3m = ((current_price - p_3m) / p_3m) * 100.0 if p_3m != 0 else 0.0
-        r_6m = ((current_price - p_6m) / p_6m) * 100.0 if p_6m != 0 else 0.0
-        r_ytd = ((current_price - p_ytd) / p_ytd) * 100.0 if p_ytd != 0 else 0.0
-        r_1y = ((current_price - p_1y) / p_1y) * 100.0 if p_1y != 0 else 0.0
-        r_5y = ((current_price - p_5y) / p_5y) * 100.0 if p_5y != 0 else 0.0
+        r_1d = ((current_price - p_1d) / p_1d) * 100.0 if p_1d > 0 and not np.isnan(p_1d) else 0.0
+        r_1w = ((current_price - p_1w) / p_1w) * 100.0 if p_1w > 0 and not np.isnan(p_1w) else 0.0
+        r_1m = ((current_price - p_1m) / p_1m) * 100.0 if p_1m > 0 and not np.isnan(p_1m) else 0.0
+        r_3m = ((current_price - p_3m) / p_3m) * 100.0 if p_3m > 0 and not np.isnan(p_3m) else 0.0
+        r_6m = ((current_price - p_6m) / p_6m) * 100.0 if p_6m > 0 and not np.isnan(p_6m) else 0.0
+        r_ytd = ((current_price - p_ytd) / p_ytd) * 100.0 if p_ytd > 0 and not np.isnan(p_ytd) else 0.0
+        r_1y = ((current_price - p_1y) / p_1y) * 100.0 if p_1y > 0 and not np.isnan(p_1y) else 0.0
+        r_5y = ((current_price - p_5y) / p_5y) * 100.0 if p_5y > 0 and not np.isnan(p_5y) else 0.0
 
         return {
             "name": format_display_name(ticker, info),
@@ -1532,63 +1538,75 @@ def get_ticker_category(ticker, data):
         return "EQUITIES"
 
 # 11. Asynchronous Fragment Rendering for Dynamic Heat Map Grid
+def on_refresh_market_data():
+    fetch_ticker_data.clear()
+    st.cache_data.clear()
+    st.session_state["just_refreshed_data"] = True
+
 @st.fragment
 def render_heatmap_grid(
     timeframe: str,
     card_font: str,
     active_tickers: list,
 ):
-    # Action Bar inside Fragment: Refresh button, Snapshot timestamp, Extended Hours toggle & Sort By dropdown
-    col_bar_l, col_bar_c, col_bar_r = st.columns([1.5, 7.0, 1.5])
-    with col_bar_c:
-        frag_c1, frag_c2, frag_c3, frag_c4 = st.columns([1.8, 1.8, 1.4, 2.0])
+    # Action Bar inside Fragment: Clean 4-column layout with vertical alignment
+    frag_c1, frag_c2, frag_c3, frag_c4 = st.columns([1.6, 1.4, 1.1, 1.5], vertical_alignment="center")
 
-        with frag_c1:
-            if st.button("🔄 Refresh Market Data", use_container_width=True, key="frag_refresh_btn"):
-                st.cache_data.clear()
+    with frag_c1:
+        st.button(
+            "🔄 Refresh Market Data",
+            on_click=on_refresh_market_data,
+            use_container_width=True,
+            key="frag_refresh_btn",
+        )
 
-        with frag_c2:
-            now_str = datetime.datetime.now().strftime("%b %d, %I:%M:%S %p")
-            st.markdown(
-                f"""
-                <div style="display: flex; align-items: center; justify-content: center; height: 38px; gap: 6px; font-size: 0.78rem; color: #FFFFFF; white-space: nowrap;">
-                    <span style="background: #FACC15; color: #000000; font-weight: 800; padding: 2px 6px; border-radius: 4px;">SNAPSHOT</span>
-                    <span>{now_str}</span>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
+    with frag_c2:
+        now_str = datetime.datetime.now().strftime("%b %d, %I:%M:%S %p")
+        st.markdown(
+            f"""
+            <div style="display: flex; align-items: center; justify-content: center; height: 38px; gap: 6px; font-size: 0.78rem; color: #FFFFFF; white-space: nowrap;">
+                <span style="background: #FACC15; color: #000000; font-weight: 800; padding: 2px 6px; border-radius: 4px;">SNAPSHOT</span>
+                <span>{now_str}</span>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
-        with frag_c3:
-            show_ext = st.toggle(
-                "Extended Hours",
-                value=True,
-                help="Toggle pre-market and post-market (after-hours) pricing on tiles",
-                key="frag_toggle_ext",
-            )
+    with frag_c3:
+        show_ext = st.toggle(
+            "Extended Hours",
+            value=True,
+            help="Toggle pre-market and post-market (after-hours) pricing on tiles",
+            key="frag_toggle_ext",
+        )
 
-        with frag_c4:
-            sort_by = st.selectbox(
-                "Sort By",
-                options=[
-                    "Alphabetical (A-Z)",
-                    "Biggest Gain",
-                    "Biggest Dip",
-                    "Biggest Market Cap",
-                    "Highest Daily Volume",
-                    "Closest to 52-Week High",
-                ],
-                index=0,
-                label_visibility="collapsed",
-                key="frag_sort_by",
-                help="Sort heat map tiles dynamically",
-            )
+    with frag_c4:
+        sort_by = st.selectbox(
+            "Sort By",
+            options=[
+                "Alphabetical (A-Z)",
+                "Biggest Gain",
+                "Biggest Dip",
+                "Biggest Market Cap",
+                "Highest Daily Volume",
+                "Closest to 52-Week High",
+            ],
+            index=0,
+            label_visibility="collapsed",
+            key="frag_sort_by",
+            help="Sort heat map tiles dynamically",
+        )
+
+    if st.session_state.get("just_refreshed_data", False):
+        st.session_state["just_refreshed_data"] = False
+        st.toast("Market data refreshed successfully!", icon="✅")
 
     # Pre-fetch and Sort Logic
-    fetched_items = []
-    for ticker in active_tickers:
-        t_data = fetch_ticker_data(ticker)
-        fetched_items.append({"ticker": ticker, "data": t_data})
+    with st.spinner("Fetching latest live market data..."):
+        fetched_items = []
+        for ticker in active_tickers:
+            t_data = fetch_ticker_data(ticker)
+            fetched_items.append({"ticker": ticker, "data": t_data})
 
     if sort_by == "Alphabetical (A-Z)":
         sorted_items = sorted(
@@ -1652,14 +1670,22 @@ def render_heatmap_grid(
         ticker = item["ticker"]
         data = item["data"]
         if data:
-            pct_val = data.get(timeframe, 0.0)
-            price_val = data["price"]
-            curr_symbol = data["currency"]
-            bg_color = get_heat_color(pct_val)
+            pct_val = data.get(timeframe)
+            price_val = data.get("price")
+            curr_symbol = data.get("currency", "$")
 
-            prefix = "+" if pct_val > 0 else ""
-            formatted_pct = f"{prefix}{pct_val:.2f}%"
-            formatted_price = f"{curr_symbol}{price_val:,.2f}"
+            if pct_val is None or np.isnan(pct_val):
+                bg_color = "#222222"
+                formatted_pct = "N/A"
+            else:
+                bg_color = get_heat_color(pct_val)
+                prefix = "+" if pct_val > 0 else ""
+                formatted_pct = f"{prefix}{pct_val:.2f}%"
+
+            if price_val is None or np.isnan(price_val):
+                formatted_price = "Unavailable"
+            else:
+                formatted_price = f"{curr_symbol}{price_val:,.2f}"
 
             # High-Grade Pre-market or Post-market extended hours badge (Zero Emojis)
             ext_markup = ""
