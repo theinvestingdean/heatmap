@@ -1117,12 +1117,13 @@ css_content = f"""
     }}
 
     /* Institutional Asset Modal Dialog Styling */
-    div[data-testid="stDialog"] > div,
-    div.stDialog > div,
-    [data-testid="stDialog"] section[role="dialog"],
+    div[data-testid="stDialog"],
+    .stDialog {{
+        background-color: rgba(0, 0, 0, 0.75) !important;
+    }}
     section[role="dialog"],
-    div[role="dialog"],
-    [role="dialog"] {{
+    [data-testid="stDialog"] > div,
+    [data-testid="stDialog"] section {{
         background-color: #0A0D14 !important;
         border: 1px solid #1E293B !important;
         border-radius: 16px !important;
@@ -1149,19 +1150,37 @@ css_content = f"""
     /* Modal Responsive Grids */
     .modal-fundamentals-grid {{
         display: grid !important;
-        grid-template-columns: repeat(4, 1fr) !important;
+        grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
         gap: 8px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }}
+    .modal-fundamentals-grid > div {{
+        min-width: 0 !important;
+        box-sizing: border-box !important;
     }}
     .modal-scorecard-grid {{
         display: grid !important;
-        grid-template-columns: repeat(4, 1fr) !important;
+        grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
         gap: 8px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }}
+    .modal-scorecard-grid > div {{
+        min-width: 0 !important;
+        box-sizing: border-box !important;
     }}
     .modal-lower-grid {{
         display: grid !important;
         grid-template-columns: 1fr 1fr !important;
         gap: 10px !important;
         margin-bottom: 16px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }}
+    .modal-lower-grid > div {{
+        min-width: 0 !important;
+        box-sizing: border-box !important;
     }}
 
     /* Mobile Modal & Viewport Lock */
@@ -1171,6 +1190,8 @@ css_content = f"""
             max-width: 100vw !important;
             width: 100vw !important;
         }}
+
+        /* Fullscreen scrollable backdrop for mobile dialog */
         div[data-testid="stDialog"],
         .stDialog {{
             position: fixed !important;
@@ -1178,64 +1199,100 @@ css_content = f"""
             left: 0 !important;
             right: 0 !important;
             bottom: 0 !important;
-            width: 100vw !important;
-            max-width: 100vw !important;
-            height: 100vh !important;
+            width: 100% !important;
+            height: 100% !important;
+            overflow-y: auto !important;
             overflow-x: hidden !important;
-            padding: 8px !important;
-            margin: 0 !important;
+            -webkit-overflow-scrolling: touch !important;
             display: flex !important;
             justify-content: center !important;
-            align-items: center !important;
+            align-items: flex-start !important;
+            padding: 10px 6px 36px 6px !important;
+            margin: 0 !important;
             box-sizing: border-box !important;
+            z-index: 999999 !important;
         }}
-        html body div[data-testid="stDialog"] div.ep9mgll1,
-        html body div[data-testid="stDialog"] section.ep9mgll2,
-        html body div.stDialog div.ep9mgll1,
-        html body div.stDialog section.ep9mgll2,
-        html body div[data-testid="stDialog"] div,
-        html body div[data-testid="stDialog"] section,
+
+        /* Target ONLY the modal window frame */
         div[data-testid="stDialog"] > div,
-        .stDialog > div,
+        div[data-testid="stDialog"] div.ep9mgll1,
+        div.stDialog > div,
+        div.stDialog div.ep9mgll1,
         [data-testid="stDialog"] section,
         section[role="dialog"] {{
-            width: 95vw !important;
-            max-width: 95vw !important;
+            width: 96vw !important;
+            max-width: 96vw !important;
             min-width: 0 !important;
-            margin: 0 auto !important;
+            margin: 8px auto 24px auto !important;
+            position: relative !important;
+            top: 0 !important;
             left: 0 !important;
             transform: none !important;
             box-sizing: border-box !important;
+            border-radius: 14px !important;
         }}
+
+        /* Dialog inner content wrapper padding */
+        div[data-testid="stDialog"] section,
+        section[role="dialog"],
+        div[data-testid="stDialog"] .ep9mgll6 {{
+            padding: 10px 8px !important;
+            box-sizing: border-box !important;
+            width: 100% !important;
+            max-width: 100% !important;
+        }}
+
         div[data-testid="stDialog"] header,
         section[role="dialog"] header,
         div[data-testid="stDialog"] h2 {{
             width: 100% !important;
             max-width: 100% !important;
             min-width: 0 !important;
-            padding: 6px 8px 0 8px !important;
+            padding: 4px 6px 0 6px !important;
             box-sizing: border-box !important;
+            font-size: 1.0rem !important;
         }}
+
         .modal-header-container {{
             flex-direction: column !important;
             align-items: flex-start !important;
-            gap: 8px !important;
+            gap: 6px !important;
         }}
         .modal-header-price {{
             text-align: left !important;
         }}
         .modal-fundamentals-grid {{
-            grid-template-columns: repeat(2, 1fr) !important;
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
             gap: 6px !important;
+            width: 100% !important;
+        }}
+        .modal-fundamentals-grid > div {{
+            width: 100% !important;
+            min-width: 0 !important;
+            padding: 8px 4px !important;
+            box-sizing: border-box !important;
         }}
         .modal-scorecard-grid {{
-            grid-template-columns: repeat(4, 1fr) !important;
+            grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
             gap: 4px !important;
+            width: 100% !important;
+        }}
+        .modal-scorecard-grid > div {{
+            width: 100% !important;
+            min-width: 0 !important;
+            padding: 6px 2px !important;
+            box-sizing: border-box !important;
         }}
         .modal-lower-grid {{
             grid-template-columns: 1fr !important;
             gap: 8px !important;
             margin-bottom: 12px !important;
+            width: 100% !important;
+        }}
+        .modal-lower-grid > div {{
+            width: 100% !important;
+            min-width: 0 !important;
+            box-sizing: border-box !important;
         }}
     }}
 </style>
