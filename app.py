@@ -152,6 +152,10 @@ DEFAULT_TICKERS = [
     "MRVL",
     "MU",
     "TSM",
+    "MSFT",
+    "AAPL",
+    "SKHY",
+    "META",
     "SMGB.L",
     "XNAQ.L",
     "SPCX",
@@ -181,6 +185,7 @@ if "available_options" not in st.session_state:
                     "MSFT",
                     "AMZN",
                     "META",
+                    "SKHY",
                 ]
             )
         )
@@ -188,6 +193,13 @@ if "available_options" not in st.session_state:
 
 if "active_tickers" not in st.session_state:
     st.session_state.active_tickers = list(DEFAULT_TICKERS)
+else:
+    # Ensure newly added defaults are included for existing sessions
+    for _new_t in ["MSFT", "AAPL", "SKHY", "META"]:
+        if _new_t not in st.session_state.active_tickers:
+            st.session_state.active_tickers.append(_new_t)
+        if _new_t not in st.session_state.available_options:
+            st.session_state.available_options.append(_new_t)
 
 # Normalize any existing LSE tickers added without .L extension
 if "active_tickers" in st.session_state:
@@ -685,16 +697,25 @@ css_content = f"""
         text-transform: uppercase;
     }}
     .heatmap-grid {{
-        display: grid !important;
-        grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+        display: flex !important;
+        flex-wrap: wrap !important;
+        justify-content: center !important;
         gap: 10px !important;
         width: 100% !important;
         margin: 0 auto !important;
         box-sizing: border-box !important;
     }}
-    @media (max-width: 1100px) {{
+    @media (max-width: 1100px) and (min-width: 601px) {{
         .heatmap-grid {{
-            grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+            display: flex !important;
+            flex-wrap: wrap !important;
+            justify-content: center !important;
+            gap: 8px !important;
+        }}
+        .heatmap-card {{
+            flex: 0 0 calc((100% - 16px) / 3) !important;
+            max-width: calc((100% - 16px) / 3) !important;
+            width: calc((100% - 16px) / 3) !important;
         }}
     }}
 
@@ -703,10 +724,12 @@ css_content = f"""
         font-family: {active_font_config['family']} !important;
         font-variant-numeric: tabular-nums;
         font-feature-settings: "tnum" 1;
+        flex: 0 0 calc((100% - 50px) / 6) !important;
+        max-width: calc((100% - 50px) / 6) !important;
+        width: calc((100% - 50px) / 6) !important;
         min-height: 135px;
         min-width: 0 !important;
         box-sizing: border-box !important;
-        width: 100% !important;
         border-radius: 8px;
         padding: 12px 6px 10px 6px;
         display: flex;
@@ -721,12 +744,16 @@ css_content = f"""
         transition: transform 0.15s ease, box-shadow 0.15s ease;
         user-select: none;
         overflow: hidden !important;
+        cursor: pointer !important;
+        text-decoration: none !important;
+        color: inherit !important;
     }}
     .heatmap-card:hover {{
         transform: translateY(-3px);
         box-shadow: inset 1px 1px 1px rgba(255, 255, 255, 0.3), 
                     0 8px 20px rgba(250, 204, 21, 0.25);
         border-color: rgba(250, 204, 21, 0.6);
+        text-decoration: none !important;
     }}
     .card-ticker {{
         font-family: {active_font_config['family']} !important;
@@ -992,10 +1019,14 @@ css_content = f"""
             letter-spacing: -0.2px !important;
         }}
         .heatmap-grid {{
+            display: grid !important;
             grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
             gap: 6px !important;
         }}
         .heatmap-card {{
+            flex: initial !important;
+            width: 100% !important;
+            max-width: 100% !important;
             min-height: 130px !important;
             padding: 7px 4px 6px 4px !important;
             border-radius: 6px !important;
@@ -1005,6 +1036,9 @@ css_content = f"""
             align-items: center !important;
             overflow: hidden !important;
             box-sizing: border-box !important;
+            cursor: pointer !important;
+            text-decoration: none !important;
+            color: inherit !important;
         }}
         .card-ticker {{
             font-size: 0.94rem !important;
@@ -1079,6 +1113,129 @@ css_content = f"""
             font-weight: 700 !important;
             white-space: nowrap !important;
             line-height: 1.1 !important;
+        }}
+    }}
+
+    /* Institutional Asset Modal Dialog Styling */
+    div[data-testid="stDialog"] > div,
+    div.stDialog > div,
+    [data-testid="stDialog"] section[role="dialog"],
+    section[role="dialog"],
+    div[role="dialog"],
+    [role="dialog"] {{
+        background-color: #0A0D14 !important;
+        border: 1px solid #1E293B !important;
+        border-radius: 16px !important;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.9) !important;
+        color: #FFFFFF !important;
+    }}
+    div[data-testid="stDialog"] header,
+    section[role="dialog"] header,
+    div[role="dialog"] header {{
+        background: transparent !important;
+        border-bottom: none !important;
+    }}
+    div[data-testid="stDialog"] header button,
+    section[role="dialog"] header button,
+    div[role="dialog"] header button {{
+        color: #94A3B8 !important;
+    }}
+    div[data-testid="stDialog"] header button:hover,
+    section[role="dialog"] header button:hover,
+    div[role="dialog"] header button:hover {{
+        color: #FACC15 !important;
+    }}
+
+    /* Modal Responsive Grids */
+    .modal-fundamentals-grid {{
+        display: grid !important;
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 8px !important;
+    }}
+    .modal-scorecard-grid {{
+        display: grid !important;
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 8px !important;
+    }}
+    .modal-lower-grid {{
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 10px !important;
+        margin-bottom: 16px !important;
+    }}
+
+    /* Mobile Modal & Viewport Lock */
+    @media (max-width: 600px) {{
+        html, body, .stApp, [data-testid="stAppViewContainer"], .main {{
+            overflow-x: hidden !important;
+            max-width: 100vw !important;
+            width: 100vw !important;
+        }}
+        div[data-testid="stDialog"],
+        .stDialog {{
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+            width: 100vw !important;
+            max-width: 100vw !important;
+            height: 100vh !important;
+            overflow-x: hidden !important;
+            padding: 8px !important;
+            margin: 0 !important;
+            display: flex !important;
+            justify-content: center !important;
+            align-items: center !important;
+            box-sizing: border-box !important;
+        }}
+        html body div[data-testid="stDialog"] div.ep9mgll1,
+        html body div[data-testid="stDialog"] section.ep9mgll2,
+        html body div.stDialog div.ep9mgll1,
+        html body div.stDialog section.ep9mgll2,
+        html body div[data-testid="stDialog"] div,
+        html body div[data-testid="stDialog"] section,
+        div[data-testid="stDialog"] > div,
+        .stDialog > div,
+        [data-testid="stDialog"] section,
+        section[role="dialog"] {{
+            width: 95vw !important;
+            max-width: 95vw !important;
+            min-width: 0 !important;
+            margin: 0 auto !important;
+            left: 0 !important;
+            transform: none !important;
+            box-sizing: border-box !important;
+        }}
+        div[data-testid="stDialog"] header,
+        section[role="dialog"] header,
+        div[data-testid="stDialog"] h2 {{
+            width: 100% !important;
+            max-width: 100% !important;
+            min-width: 0 !important;
+            padding: 6px 8px 0 8px !important;
+            box-sizing: border-box !important;
+        }}
+        .modal-header-container {{
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 8px !important;
+        }}
+        .modal-header-price {{
+            text-align: left !important;
+        }}
+        .modal-fundamentals-grid {{
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 6px !important;
+        }}
+        .modal-scorecard-grid {{
+            grid-template-columns: repeat(4, 1fr) !important;
+            gap: 4px !important;
+        }}
+        .modal-lower-grid {{
+            grid-template-columns: 1fr !important;
+            gap: 8px !important;
+            margin-bottom: 12px !important;
         }}
     }}
 </style>
@@ -1161,6 +1318,7 @@ KNOWN_ASSET_NAMES = {
     "SPCX": "SpaceX Holdings",
     "AAPL": "Apple",
     "MSFT": "Microsoft",
+    "SKHY": "SK hynix",
     "AMZN": "Amazon",
     "META": "Meta Platforms",
     "RR.L": "Rolls-Royce Holdings",
@@ -1379,21 +1537,50 @@ def fetch_ticker_data(ticker):
         # Market Cap from yf.Ticker(ticker).info
         market_cap = float(info.get("marketCap", 0) or getattr(t.fast_info, "market_cap", 0) or 0)
 
-        # Volume & 52-Week High (Speed Optimization: Extracted directly from historical dataframe)
+        # Volume & 52-Week High/Low (Speed Optimization: Extracted directly from historical dataframe)
         daily_volume = float(hist["Volume"].iloc[-1]) if ("Volume" in hist.columns and not pd.isna(hist["Volume"].iloc[-1])) else 0.0
 
         dt_1y = last_dt - pd.DateOffset(years=1)
         hist_1y = hist[hist.index >= dt_1y]
         fifty_two_week_high = float(hist_1y["High"].max()) if not hist_1y.empty else float(hist["High"].max())
+        fifty_two_week_low = float(hist_1y["Low"].min()) if not hist_1y.empty else float(hist["Low"].min())
+
+        day_low = float(hist["Low"].iloc[-1]) if ("Low" in hist.columns and not pd.isna(hist["Low"].iloc[-1])) else current_price
+        day_high = float(hist["High"].iloc[-1]) if ("High" in hist.columns and not pd.isna(hist["High"].iloc[-1])) else current_price
 
         if is_pence:
             fifty_two_week_high = fifty_two_week_high / 100.0
+            fifty_two_week_low = fifty_two_week_low / 100.0
+            day_low = day_low / 100.0
+            day_high = day_high / 100.0
 
         distance_from_high = (current_price / fifty_two_week_high) - 1.0 if fifty_two_week_high > 0 else -1.0
+
+        avg_volume = float(info.get("averageVolume") or info.get("averageVolume10days") or (hist["Volume"].tail(30).mean() if "Volume" in hist.columns else 0.0) or 0.0)
+
+        # Fundamentals & Valuation
+        trailing_pe = info.get("trailingPE")
+        forward_pe = info.get("forwardPE")
+        div_yield = info.get("dividendYield") or info.get("trailingAnnualDividendYield")
+
+        sector_str = info.get("sector")
+        if not sector_str:
+            sector_str = "ETF / Index Fund" if quote_type == "ETF" else ("Digital Asset" if quote_type == "CRYPTOCURRENCY" else "Equity")
+        industry_str = info.get("industry") or info.get("category") or ("Index Basket" if quote_type == "ETF" else "")
+
+        # Analyst Consensus
+        target_mean_price = info.get("targetMeanPrice") or info.get("targetMedianPrice")
+        if target_mean_price is not None and is_pence and target_mean_price > 800:
+            target_mean_price = target_mean_price / 100.0
+
+        rec_key = info.get("recommendationKey")
+        num_analysts = info.get("numberOfAnalystOpinions")
 
         # Ensure accurate market cap for SpaceX (SPCX): $1.94 Trillion
         if ticker.upper() == "SPCX":
             market_cap = 1_940_000_000_000.0
+            sector_str = "Aerospace & Defense"
+            industry_str = "Commercial Spaceflight & Satellite"
 
         r_1d = ((current_price - p_1d) / p_1d) * 100.0 if p_1d > 0 and not np.isnan(p_1d) else 0.0
         r_1w = ((current_price - p_1w) / p_1w) * 100.0 if p_1w > 0 and not np.isnan(p_1w) else 0.0
@@ -1406,6 +1593,7 @@ def fetch_ticker_data(ticker):
 
         return {
             "name": format_display_name(ticker, info),
+            "ticker": ticker.upper(),
             "price": current_price,
             "currency": currency,
             "quote_type": str(quote_type).upper(),
@@ -1429,13 +1617,305 @@ def fetch_ticker_data(ticker):
             "5 Years": r_5y,
             "marketCap": market_cap,
             "volume": daily_volume,
+            "avg_volume": avg_volume,
             "fifty_two_week_high": fifty_two_week_high,
+            "fifty_two_week_low": fifty_two_week_low,
+            "day_low": day_low,
+            "day_high": day_high,
             "distance_from_high": distance_from_high,
+            "trailing_pe": trailing_pe,
+            "forward_pe": forward_pe,
+            "dividend_yield": div_yield,
+            "sector": sector_str,
+            "industry": industry_str,
+            "target_mean_price": target_mean_price,
+            "recommendation_key": rec_key,
+            "number_of_analysts": num_analysts,
             "ext": ext_data,
             "is_open": is_reg_open,
         }
     except Exception:
         return None
+
+
+# Helper Formatting Utilities for Asset Modal
+def format_market_cap_str(mc, curr="$"):
+    if not mc or mc <= 0 or np.isnan(mc):
+        return "N/A"
+    if mc >= 1e12:
+        return f"{curr}{mc / 1e12:.2f}T"
+    elif mc >= 1e9:
+        return f"{curr}{mc / 1e9:.2f}B"
+    elif mc >= 1e6:
+        return f"{curr}{mc / 1e6:.2f}M"
+    else:
+        return f"{curr}{mc:,.0f}"
+
+
+def format_volume_str(vol):
+    if not vol or vol <= 0 or np.isnan(vol):
+        return "N/A"
+    if vol >= 1e9:
+        return f"{vol / 1e9:.2f}B"
+    elif vol >= 1e6:
+        return f"{vol / 1e6:.2f}M"
+    elif vol >= 1e3:
+        return f"{vol / 1e3:.1f}K"
+    else:
+        return f"{vol:,.0f}"
+
+
+def format_div_yield_str(val):
+    if val is None or np.isnan(val) or val <= 0:
+        return "N/A"
+    if val < 0.05:
+        return f"{val * 100:.2f}%"
+    return f"{val:.2f}%"
+
+
+# 6b. Institutional Asset Breakdown Modal Dialog (@st.dialog)
+@st.dialog("Institutional Asset Overview", width="small")
+def show_stock_breakdown_dialog(ticker: str):
+    data = fetch_ticker_data(ticker)
+    if not data:
+        st.error(f"Unable to retrieve market data for {ticker}.")
+        if st.button("✕ Close", key="close_modal_err", use_container_width=True):
+            if "stock" in st.query_params:
+                del st.query_params["stock"]
+            st.rerun()
+        return
+
+    curr = data.get("currency", "$")
+    price = data.get("price", 0.0)
+    name = data.get("name", ticker)
+    sector = data.get("sector", "")
+    industry = data.get("industry", "")
+    sec_ind = f"{sector} • {industry}" if (sector and industry) else (sector or industry)
+
+    # 1D return
+    r_1d = data.get("1D", 0.0)
+    sign_1d = "+" if r_1d > 0 else ""
+    clr_1d = "#22C55E" if r_1d > 0 else ("#EF4444" if r_1d < 0 else "#94A3B8")
+
+    # Ext session
+    ext = data.get("ext")
+    ext_html = ""
+    if ext:
+        sess = ext["session"]
+        ep = ext["price"]
+        epct = ext["pct"]
+        esign = "+" if epct > 0 else ""
+        eclr = "#22C55E" if epct > 0 else "#EF4444"
+        ext_html = (
+            f'<div style="font-size: 0.85rem; color: #94A3B8; margin-top: 3px;">'
+            f'<span style="background: #EAB308; color: #000000; font-weight: 800; padding: 2px 6px; border-radius: 4px; font-size: 0.72rem; margin-right: 6px;">{sess}</span>'
+            f'<span style="color: #FFFFFF; font-weight: 700;">{curr}{ep:,.2f}</span>'
+            f'<span style="color: {eclr}; font-weight: 700; margin-left: 4px;">({esign}{epct:.2f}%)</span>'
+            f'</div>'
+        )
+
+    # Asset Header Block
+    header_block = (
+        f'<div style="background: #11141A; border: 1px solid #1E293B; border-radius: 12px; padding: 14px 16px; margin-bottom: 10px;">'
+        f'<div class="modal-header-container" style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 8px;">'
+        f'<div>'
+        f'<div style="display: flex; align-items: center; gap: 8px;">'
+        f'<span style="font-size: 1.35rem; font-weight: 800; color: #FFFFFF; letter-spacing: -0.3px;">{name}</span>'
+        f'<span style="background: #FACC15; color: #000000; font-weight: 800; padding: 2px 7px; border-radius: 4px; font-size: 0.80rem;">{ticker}</span>'
+        f'</div>'
+        f'<div style="color: #94A3B8; font-size: 0.76rem; font-weight: 600; margin-top: 3px;">{sec_ind}</div>'
+        f'</div>'
+        f'<div class="modal-header-price" style="text-align: right;">'
+        f'<div style="font-size: 1.50rem; font-weight: 800; color: #FFFFFF; letter-spacing: -0.5px;">'
+        f'{curr}{price:,.2f}'
+        f'<span style="font-size: 0.90rem; font-weight: 700; color: {clr_1d}; margin-left: 6px;">{sign_1d}{r_1d:.2f}%</span>'
+        f'</div>'
+        f'{ext_html}'
+        f'</div>'
+        f'</div>'
+        f'</div>'
+    )
+    st.markdown(header_block, unsafe_allow_html=True)
+
+    # 1. 52-Week Range Progress Meter & Day Range
+    low_52 = data.get("fifty_two_week_low", price)
+    high_52 = data.get("fifty_two_week_high", price)
+    day_l = data.get("day_low", price)
+    day_h = data.get("day_high", price)
+    span_52 = high_52 - low_52
+    pct_pos = max(0.0, min(100.0, ((price - low_52) / span_52) * 100.0)) if span_52 > 0 else 50.0
+
+    range_block = (
+        f'<div style="background: #11141A; border: 1px solid #1E293B; border-radius: 12px; padding: 12px 14px; margin-bottom: 10px;">'
+        f'<div style="display: flex; justify-content: space-between; align-items: center;">'
+        f'<span style="font-size: 0.72rem; font-weight: 800; color: #94A3B8; letter-spacing: 0.8px; text-transform: uppercase;">52-Week Price Range</span>'
+        f'<span style="font-size: 0.76rem; font-weight: 800; color: #FACC15;">{pct_pos:.0f}% of Range</span>'
+        f'</div>'
+        f'<div style="position: relative; width: 100%; height: 8px; background: #27272A; border-radius: 4px; margin: 10px 0 8px 0;">'
+        f'<div style="position: absolute; left: 0; width: {pct_pos}%; height: 100%; background: linear-gradient(90deg, #EF4444 0%, #EAB308 50%, #22C55E 100%); border-radius: 4px;"></div>'
+        f'<div style="position: absolute; left: {pct_pos}%; top: -5px; width: 18px; height: 18px; border-radius: 50%; background: #FFFFFF; border: 3px solid #FACC15; box-shadow: 0 0 8px rgba(250, 204, 21, 0.9); transform: translateX(-50%);"></div>'
+        f'</div>'
+        f'<div style="display: flex; justify-content: space-between; font-size: 0.74rem; color: #94A3B8; flex-wrap: wrap; gap: 4px;">'
+        f'<div><span style="color: #64748B;">52W Low:</span> <strong style="color: #FFFFFF;">{curr}{low_52:,.2f}</strong></div>'
+        f'<div><span style="color: #64748B;">Day Range:</span> <strong style="color: #FFFFFF;">{curr}{day_l:,.2f} – {curr}{day_h:,.2f}</strong></div>'
+        f'<div><span style="color: #64748B;">52W High:</span> <strong style="color: #FFFFFF;">{curr}{high_52:,.2f}</strong></div>'
+        f'</div>'
+        f'</div>'
+    )
+    st.markdown(range_block, unsafe_allow_html=True)
+
+    # 2. Valuation & Key Fundamentals (4 Tiles)
+    mc_str = format_market_cap_str(data.get("marketCap"), curr)
+    trailing_pe = data.get("trailing_pe")
+    pe_str = f"{trailing_pe:.1f}x" if (trailing_pe and trailing_pe > 0 and not np.isnan(trailing_pe)) else "N/A"
+    forward_pe = data.get("forward_pe")
+    fwd_pe_str = f"{forward_pe:.1f}x" if (forward_pe and forward_pe > 0 and not np.isnan(forward_pe)) else "N/A"
+    div_yield = data.get("dividend_yield")
+    div_str = format_div_yield_str(div_yield)
+
+    val_block = (
+        f'<div style="background: #11141A; border: 1px solid #1E293B; border-radius: 12px; padding: 12px 14px; margin-bottom: 10px;">'
+        f'<div style="font-size: 0.72rem; font-weight: 800; color: #94A3B8; letter-spacing: 0.8px; text-transform: uppercase; margin-bottom: 8px;">Valuation & Key Fundamentals</div>'
+        f'<div class="modal-fundamentals-grid">'
+        f'<div style="background: #181D26; padding: 8px 6px; border-radius: 8px; text-align: center; border: 1px solid #232B38;">'
+        f'<div style="font-size: 0.66rem; color: #888888; font-weight: 700; text-transform: uppercase;">Market Cap</div>'
+        f'<div style="font-size: 0.95rem; font-weight: 800; color: #FFFFFF; margin-top: 2px;">{mc_str}</div>'
+        f'</div>'
+        f'<div style="background: #181D26; padding: 8px 6px; border-radius: 8px; text-align: center; border: 1px solid #232B38;">'
+        f'<div style="font-size: 0.66rem; color: #888888; font-weight: 700; text-transform: uppercase;">Trailing P/E</div>'
+        f'<div style="font-size: 0.95rem; font-weight: 800; color: #FFFFFF; margin-top: 2px;">{pe_str}</div>'
+        f'</div>'
+        f'<div style="background: #181D26; padding: 8px 6px; border-radius: 8px; text-align: center; border: 1px solid #232B38;">'
+        f'<div style="font-size: 0.66rem; color: #888888; font-weight: 700; text-transform: uppercase;">Forward P/E</div>'
+        f'<div style="font-size: 0.95rem; font-weight: 800; color: #FFFFFF; margin-top: 2px;">{fwd_pe_str}</div>'
+        f'</div>'
+        f'<div style="background: #181D26; padding: 8px 6px; border-radius: 8px; text-align: center; border: 1px solid #232B38;">'
+        f'<div style="font-size: 0.66rem; color: #888888; font-weight: 700; text-transform: uppercase;">Div Yield</div>'
+        f'<div style="font-size: 0.95rem; font-weight: 800; color: #FFFFFF; margin-top: 2px;">{div_str}</div>'
+        f'</div>'
+        f'</div>'
+        f'</div>'
+    )
+    st.markdown(val_block, unsafe_allow_html=True)
+
+    # 3. Multi-Timeframe Return Scorecard (8 Tiles)
+    tf_keys = [
+        ("1D", "1 Day"),
+        ("1W", "1 Week"),
+        ("1M", "1 Month"),
+        ("3M", "3 Months"),
+        ("6M", "6 Months"),
+        ("YTD", "Year to Date"),
+        ("1Y", "1 Year"),
+        ("5Y", "5 Year"),
+    ]
+    tf_tiles_html = []
+    for short_lbl, full_key in tf_keys:
+        val = data.get(full_key)
+        if val is None or np.isnan(val):
+            val_bg = "#222222"
+            val_str = "N/A"
+        else:
+            val_bg = get_heat_color(val)
+            v_sign = "+" if val > 0 else ""
+            val_str = f"{v_sign}{val:.2f}%"
+        tf_tiles_html.append(
+            f'<div style="background-color: {val_bg}; padding: 7px 3px; border-radius: 6px; text-align: center; border: 1px solid rgba(255,255,255,0.08); box-shadow: inset 1px 1px 1px rgba(255,255,255,0.15), 0 3px 6px rgba(0,0,0,0.5);">'
+            f'<div style="font-size: 0.65rem; font-weight: 800; color: #E2E8F0; letter-spacing: 0.5px;">{short_lbl}</div>'
+            f'<div style="font-size: 0.85rem; font-weight: 800; color: #FFFFFF; margin-top: 2px;">{val_str}</div>'
+            f'</div>'
+        )
+    scorecard_grid = "".join(tf_tiles_html)
+
+    scorecard_block = (
+        f'<div style="background: #11141A; border: 1px solid #1E293B; border-radius: 12px; padding: 12px 14px; margin-bottom: 10px;">'
+        f'<div style="font-size: 0.72rem; font-weight: 800; color: #94A3B8; letter-spacing: 0.8px; text-transform: uppercase; margin-bottom: 8px;">Multi-Timeframe Return Scorecard</div>'
+        f'<div class="modal-scorecard-grid">'
+        f'{scorecard_grid}'
+        f'</div>'
+        f'</div>'
+    )
+    st.markdown(scorecard_block, unsafe_allow_html=True)
+
+    # 4. Trading Volume & Activity
+    d_vol = data.get("volume", 0.0)
+    avg_vol = data.get("avg_volume", 0.0)
+    d_vol_str = format_volume_str(d_vol)
+    avg_vol_str = format_volume_str(avg_vol)
+    rvol = (d_vol / avg_vol) if (avg_vol > 0 and d_vol > 0) else 1.0
+    if rvol >= 1.25:
+        rvol_badge = f'<span style="background: #15803D; color: #FFFFFF; font-weight: 800; padding: 2px 7px; border-radius: 4px; font-size: 0.70rem;">⚡ Elevated ({rvol:.2f}x)</span>'
+    elif rvol <= 0.75 and rvol > 0:
+        rvol_badge = f'<span style="background: #374151; color: #D1D5DB; font-weight: 800; padding: 2px 7px; border-radius: 4px; font-size: 0.70rem;">💤 Light ({rvol:.2f}x)</span>'
+    else:
+        rvol_badge = f'<span style="background: #1F2937; color: #9CA3AF; font-weight: 700; padding: 2px 7px; border-radius: 4px; font-size: 0.70rem;">Normal ({rvol:.2f}x)</span>'
+
+    # 5. Wall Street / Analyst Consensus
+    rec_key = data.get("recommendation_key")
+    target_price = data.get("target_mean_price")
+    num_analysts = data.get("number_of_analysts")
+    quote_type = data.get("quote_type", "EQUITY")
+
+    if target_price and target_price > 0 and price > 0:
+        implied_upside = ((target_price - price) / price) * 100.0
+        up_sign = "+" if implied_upside > 0 else ""
+        up_clr = "#22C55E" if implied_upside > 0 else "#EF4444"
+        up_str = f'<span style="color: {up_clr}; font-weight: 800;">{up_sign}{implied_upside:.1f}%</span>'
+        target_display = f"{curr}{target_price:,.2f} ({up_str} Implied)"
+    else:
+        target_display = "N/A"
+
+    if rec_key:
+        rec_clean = str(rec_key).replace("_", " ").upper()
+        if "BUY" in rec_clean:
+            rec_pill = f'<span style="background: #15803D; color: #FFFFFF; font-weight: 800; padding: 2px 8px; border-radius: 4px; font-size: 0.72rem;">{rec_clean}</span>'
+        elif "HOLD" in rec_clean:
+            rec_pill = f'<span style="background: #854D0E; color: #FEF08A; font-weight: 800; padding: 2px 8px; border-radius: 4px; font-size: 0.72rem;">{rec_clean}</span>'
+        else:
+            rec_pill = f'<span style="background: #991B1B; color: #FFFFFF; font-weight: 800; padding: 2px 8px; border-radius: 4px; font-size: 0.72rem;">{rec_clean}</span>'
+    else:
+        rec_pill = '<span style="color: #64748B; font-weight: 600; font-size: 0.72rem;">N/A</span>'
+
+    coverage_str = f"Based on {num_analysts} Wall Street analysts" if (num_analysts and num_analysts > 0) else ""
+
+    # Combine 4 & 5 into an intuitive lower block
+    lower_block = (
+        f'<div class="modal-lower-grid">'
+        f'<div style="background: #11141A; border: 1px solid #1E293B; border-radius: 12px; padding: 12px 14px;">'
+        f'<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">'
+        f'<span style="font-size: 0.70rem; font-weight: 800; color: #94A3B8; letter-spacing: 0.8px; text-transform: uppercase;">Volume & Liquidity</span>'
+        f'{rvol_badge}'
+        f'</div>'
+        f'<div style="display: flex; justify-content: space-between; margin-top: 6px; font-size: 0.78rem;">'
+        f'<div><span style="color: #64748B;">Today:</span> <strong style="color: #FFFFFF;">{d_vol_str}</strong></div>'
+        f'<div><span style="color: #64748B;">3M Avg:</span> <strong style="color: #FFFFFF;">{avg_vol_str}</strong></div>'
+        f'</div>'
+        f'</div>'
+        f'<div style="background: #11141A; border: 1px solid #1E293B; border-radius: 12px; padding: 12px 14px;">'
+        f'<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">'
+        f'<span style="font-size: 0.70rem; font-weight: 800; color: #94A3B8; letter-spacing: 0.8px; text-transform: uppercase;">Analyst Consensus</span>'
+        f'{rec_pill}'
+        f'</div>'
+        f'<div style="font-size: 0.78rem; margin-top: 6px;">'
+        f'<span style="color: #64748B;">12M Target:</span> <strong style="color: #FFFFFF;">{target_display}</strong>'
+        f'</div>'
+        f'<div style="color: #64748B; font-size: 0.66rem; margin-top: 3px;">{coverage_str if coverage_str else ("Broad Index Basket" if quote_type == "ETF" else "Private Asset" if ticker == "SPCX" else "")}</div>'
+        f'</div>'
+        f'</div>'
+    )
+    st.markdown(lower_block, unsafe_allow_html=True)
+
+    if st.button("✕ Close Asset Breakdown", use_container_width=True, key="close_stock_modal_btn"):
+        if "stock" in st.query_params:
+            del st.query_params["stock"]
+        st.rerun()
+
+
+# Trigger Asset Breakdown Modal if a stock card was clicked
+clicked_stock = st.query_params.get("stock")
+if clicked_stock:
+    del st.query_params["stock"]
+    show_stock_breakdown_dialog(clicked_stock)
 
 
 # 7. Header (UK English: INSTITUTIONAL MULTI-ASSET REAL-TIME VISUALISER)
@@ -1608,11 +2088,11 @@ def on_refresh_market_data():
     st.cache_data.clear()
     st.session_state["just_refreshed_data"] = True
 
-@st.fragment
-def render_heatmap_grid(
+def _render_heatmap_grid_core(
     timeframe: str,
     card_font: str,
     active_tickers: list,
+    is_desktop: bool = True,
 ):
     # Action Bar inside Fragment: Clean 4-column layout with vertical alignment
     frag_c1, frag_c2, frag_c3, frag_c4 = st.columns([1.6, 1.4, 1.1, 1.5], vertical_alignment="center")
@@ -1627,11 +2107,13 @@ def render_heatmap_grid(
 
     with frag_c2:
         now_str = datetime.datetime.now().strftime("%b %d, %I:%M:%S %p")
+        auto_label = '<span style="color: #64748B; font-size: 0.68rem; margin-left: 2px;">(Auto 3m)</span>' if is_desktop else ""
         st.markdown(
             f"""
             <div style="display: flex; align-items: center; justify-content: center; height: 38px; gap: 6px; font-size: 0.78rem; color: #FFFFFF; white-space: nowrap;">
                 <span style="background: #FACC15; color: #000000; font-weight: 800; padding: 2px 6px; border-radius: 4px;">SNAPSHOT</span>
                 <span>{now_str}</span>
+                {auto_label}
             </div>
             """,
             unsafe_allow_html=True,
@@ -1803,13 +2285,13 @@ def render_heatmap_grid(
         asset_name = data.get("name") if data else KNOWN_ASSET_NAMES.get(ticker.upper(), ticker)
 
         card_html = (
-            f'<div class="heatmap-card" style="background-color: {bg_color};">'
+            f'<a href="?stock={ticker}" target="_self" class="heatmap-card" style="background-color: {bg_color}; text-decoration: none;">'
             f'<div class="card-ticker">{ticker}</div>'
             f'<div class="card-name" title="{asset_name}">{asset_name}</div>'
             f'<div class="card-pct">{formatted_pct}</div>'
             f'<div class="card-price">{formatted_price}</div>'
             f'{ext_markup}'
-            f'</div>'
+            f'</a>'
         )
 
         cat = get_ticker_category(ticker, data)
@@ -1855,9 +2337,33 @@ def render_heatmap_grid(
         unsafe_allow_html=True,
     )
 
+# 12. Top-Level Fragment Definitions (Desktop Auto-refreshes every 3 mins; Mobile on-demand)
+@st.fragment(run_every=180)
+def render_heatmap_desktop(timeframe: str, card_font: str, active_tickers: list):
+    _render_heatmap_grid_core(timeframe, card_font, active_tickers, is_desktop=True)
+
+@st.fragment
+def render_heatmap_mobile(timeframe: str, card_font: str, active_tickers: list):
+    _render_heatmap_grid_core(timeframe, card_font, active_tickers, is_desktop=False)
+
 # 13. Render Heatmap Fragment with Synchronised State
-render_heatmap_grid(
-    timeframe=timeframe,
-    card_font=st.session_state.card_font,
-    active_tickers=st.session_state.active_tickers,
-)
+ua = ""
+try:
+    ua = st.context.headers.get("user-agent", "").lower()
+except Exception:
+    ua = ""
+
+is_mobile = any(m in ua for m in ["mobile", "android", "iphone", "ipad", "ipod", "phone"])
+
+if is_mobile:
+    render_heatmap_mobile(
+        timeframe=timeframe,
+        card_font=st.session_state.card_font,
+        active_tickers=st.session_state.active_tickers,
+    )
+else:
+    render_heatmap_desktop(
+        timeframe=timeframe,
+        card_font=st.session_state.card_font,
+        active_tickers=st.session_state.active_tickers,
+    )
