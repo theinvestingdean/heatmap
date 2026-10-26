@@ -1646,6 +1646,20 @@ def render_heatmap_grid(
             t_data = fetch_ticker_data(ticker)
             fetched_items.append({"ticker": ticker, "data": t_data})
 
+    def get_sort_pct(x):
+        d = x.get("data")
+        if not d:
+            return None
+        # When Extended Hours is toggled ON and viewing 1 Day, rank by active Pre/Post market return
+        if show_ext and timeframe in ["1 Day", "1D"] and d.get("ext"):
+            ext_p = d["ext"].get("pct")
+            if ext_p is not None and not np.isnan(ext_p):
+                return float(ext_p)
+        val = d.get(timeframe)
+        if val is not None and not np.isnan(val):
+            return float(val)
+        return None
+
     if sort_by == "Alphabetical (A-Z)":
         sorted_items = sorted(
             fetched_items,
@@ -1655,8 +1669,8 @@ def render_heatmap_grid(
         sorted_items = sorted(
             fetched_items,
             key=lambda x: (
-                1 if (x["data"] and x["data"].get(timeframe) is not None and not np.isnan(x["data"].get(timeframe))) else 0,
-                x["data"].get(timeframe, float("-inf")) if x["data"] else float("-inf"),
+                1 if get_sort_pct(x) is not None else 0,
+                get_sort_pct(x) if get_sort_pct(x) is not None else float("-inf"),
             ),
             reverse=True,
         )
@@ -1664,8 +1678,8 @@ def render_heatmap_grid(
         sorted_items = sorted(
             fetched_items,
             key=lambda x: (
-                0 if (x["data"] and x["data"].get(timeframe) is not None and not np.isnan(x["data"].get(timeframe))) else 1,
-                x["data"].get(timeframe, float("inf")) if x["data"] else float("inf"),
+                0 if get_sort_pct(x) is not None else 1,
+                get_sort_pct(x) if get_sort_pct(x) is not None else float("inf"),
             ),
         )
     elif sort_by == "Biggest Market Cap":
