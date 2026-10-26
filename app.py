@@ -833,6 +833,21 @@ css_content = f"""
         background-color: #38BDF8;
         box-shadow: 0 0 4px #38BDF8;
     }}
+    @keyframes pulse-live {{
+        0% {{ opacity: 1; transform: scale(1); }}
+        50% {{ opacity: 0.45; transform: scale(0.85); }}
+        100% {{ opacity: 1; transform: scale(1); }}
+    }}
+    .ext-live {{
+        background: rgba(34, 197, 94, 0.15) !important;
+        color: #4ADE80 !important;
+        border: 1px solid rgba(34, 197, 94, 0.4) !important;
+    }}
+    .ext-live .ext-dot {{
+        background-color: #4ADE80 !important;
+        box-shadow: 0 0 5px #4ADE80 !important;
+        animation: pulse-live 2s infinite ease-in-out !important;
+    }}
     .ext-price {{
         color: #E2E8F0;
         font-weight: 600;
@@ -1334,6 +1349,17 @@ def fetch_ticker_data(ticker):
             except Exception:
                 ext_data = None
 
+        # Determine whether the regular exchange market session is actively open right now
+        is_reg_open = False
+        try:
+            meta = t.get_history_metadata() or {}
+            periods = meta.get("currentTradingPeriod", {})
+            now_utc = pd.Timestamp.now(tz="UTC")
+            reg_info = periods.get("regular", {})
+            is_reg_open = (reg_info.get("start") <= now_utc <= reg_info.get("end")) if (reg_info.get("start") and reg_info.get("end")) else False
+        except Exception:
+            is_reg_open = False
+
         # Convert pence (GBp) to pounds (GBP) ONLY when the feed quotes in pence
         if is_pence:
             current_price = current_price / 100.0
@@ -1406,6 +1432,7 @@ def fetch_ticker_data(ticker):
             "fifty_two_week_high": fifty_two_week_high,
             "distance_from_high": distance_from_high,
             "ext": ext_data,
+            "is_open": is_reg_open,
         }
     except Exception:
         return None
@@ -1739,9 +1766,11 @@ def render_heatmap_grid(
             else:
                 formatted_price = f"{curr_symbol}{price_val:,.2f}"
 
-            # High-Grade Pre-market or Post-market extended hours badge (Zero Emojis)
+            # High-Grade Pre-market, Post-market, or Live Regular Market Badge (Zero Emojis)
             ext_markup = ""
             ext_info = data.get("ext")
+            is_open = data.get("is_open", False)
+
             if show_ext and ext_info:
                 session_label = ext_info["session"]  # "PRE" or "POST"
                 badge_class = "ext-pre" if session_label == "PRE" else "ext-post"
@@ -1757,6 +1786,12 @@ def render_heatmap_grid(
                     f'<span class="ext-price">{curr_symbol}{ext_p:,.2f}</span>'
                     f'<span class="ext-pct {pct_class}">{ext_sign}{ext_pct:.2f}%</span>'
                     f'</div>'
+                    f'</div>'
+                )
+            elif is_open:
+                ext_markup = (
+                    f'<div class="card-ext">'
+                    f'<span class="ext-tag ext-live"><span class="ext-dot"></span>LIVE</span>'
                     f'</div>'
                 )
         else:
