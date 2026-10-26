@@ -1270,12 +1270,12 @@ def fetch_ticker_data(ticker):
         elif raw_currency is None and ticker.upper().endswith(".L") and current_price > 800:
             is_pence = True
 
-        # Fetch Pre-Market and Post-Market Extended Hours info
+        # Fetch Pre-Market and Post-Market Extended Hours info (with Cloud-resilient fallback)
         ext_data = None
-        pre_p = info.get("preMarketPrice")
-        pre_pct = info.get("preMarketChangePercent")
-        post_p = info.get("postMarketPrice")
-        post_pct = info.get("postMarketChangePercent")
+        pre_p = info.get("preMarketPrice") if info else None
+        pre_pct = info.get("preMarketChangePercent") if info else None
+        post_p = info.get("postMarketPrice") if info else None
+        post_pct = info.get("postMarketChangePercent") if info else None
 
         if pre_p is not None and pre_p > 0 and pre_pct is not None:
             ext_price = float(pre_p)
@@ -1295,6 +1295,44 @@ def fetch_ticker_data(ticker):
                 "price": ext_price,
                 "pct": float(post_pct),
             }
+        else:
+            # Cloud-resilient fallback: t.get_history_metadata() is loaded with t.history() and NEVER blocked on cloud IPs
+            try:
+                meta = t.get_history_metadata() or {}
+                periods = meta.get("currentTradingPeriod", {})
+                now_utc = pd.Timestamp.now(tz="UTC")
+                pre_info = periods.get("pre", {})
+                post_info = periods.get("post", {})
+
+                is_pre = (pre_info.get("start") <= now_utc <= pre_info.get("end")) if (pre_info.get("start") and pre_info.get("end")) else False
+                is_post = (post_info.get("start") <= now_utc <= post_info.get("end")) if (post_info.get("start") and post_info.get("end")) else False
+
+                fullday_p = meta.get("fulldayPrice")
+                fullday_pct = meta.get("fulldayChangePercent")
+                reg_p = meta.get("regularMarketPrice") or current_price
+
+                if is_pre and fullday_p and fullday_p > 0 and fullday_p != reg_p:
+                    ext_price = float(fullday_p)
+                    if is_pence:
+                        ext_price = ext_price / 100.0
+                    ext_pct = float(fullday_pct) if fullday_pct is not None else (((ext_price - current_price) / current_price) * 100.0 if current_price > 0 else 0.0)
+                    ext_data = {
+                        "session": "PRE",
+                        "price": ext_price,
+                        "pct": ext_pct,
+                    }
+                elif is_post and fullday_p and fullday_p > 0 and fullday_p != reg_p:
+                    ext_price = float(fullday_p)
+                    if is_pence:
+                        ext_price = ext_price / 100.0
+                    ext_pct = float(fullday_pct) if fullday_pct is not None else (((ext_price - current_price) / current_price) * 100.0 if current_price > 0 else 0.0)
+                    ext_data = {
+                        "session": "POST",
+                        "price": ext_price,
+                        "pct": ext_pct,
+                    }
+            except Exception:
+                ext_data = None
 
         # Convert pence (GBp) to pounds (GBP) ONLY when the feed quotes in pence
         if is_pence:
