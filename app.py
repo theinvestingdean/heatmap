@@ -958,11 +958,12 @@ css_content = f"""
        ========================================================= */
     @media (max-width: 600px) {{
         .block-container,
+        .stMainBlockContainer,
         div[data-testid="stAppViewBlockContainer"],
         section.main > div.block-container {{
             padding-left: 8px !important;
             padding-right: 8px !important;
-            padding-top: 3.5rem !important;
+            padding-top: 1.25rem !important;
         }}
         div[data-testid="stElementContainer"]:has(div[data-testid="stRadio"]),
         div[data-testid="stElementContainer"]:has(.stRadio),
@@ -1223,11 +1224,12 @@ css_content = f"""
             width: 100vw !important;
         }}
 
-        /* Force Title & Subtitle 2-line break on all mobile screens */
+        /* Force Title & Subtitle 2-line break on all mobile screens and fill screen */
         .main-title {{
-            font-size: clamp(1.45rem, 6.8vw, 1.95rem) !important;
-            line-height: 1.18 !important;
-            margin: 10px 0 0 0 !important;
+            font-size: clamp(2.05rem, 9.8vw, 2.75rem) !important;
+            line-height: 1.1 !important;
+            letter-spacing: -0.6px !important;
+            margin: 6px 0 0 0 !important;
         }}
         .title-line-1 {{
             display: block !important;
@@ -1237,11 +1239,11 @@ css_content = f"""
             display: block !important;
             white-space: nowrap !important;
             margin-left: 0 !important;
-            margin-top: 2px !important;
+            margin-top: 3px !important;
         }}
         .main-subtitle {{
-            font-size: clamp(0.60rem, 2.5vw, 0.72rem) !important;
-            letter-spacing: 1.5px !important;
+            font-size: clamp(0.68rem, 2.7vw, 0.78rem) !important;
+            letter-spacing: 2px !important;
             margin-top: 6px !important;
             line-height: 1.35 !important;
         }}
