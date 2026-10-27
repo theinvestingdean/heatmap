@@ -268,24 +268,27 @@ css_content = f"""
     }}
     
     /* Institutional Expander Container */
-    [data-testid="stExpander"] {{
+    [data-testid="stExpander"],
+    .stExpander {{
         background-color: #0E0E10 !important;
-        border: 1px solid #27272A !important;
+        border: 1px solid #FACC15 !important;
         border-radius: 8px !important;
-        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5) !important;
+        box-shadow: 0 0 10px rgba(250, 204, 21, 0.16), 0 4px 14px rgba(0, 0, 0, 0.5) !important;
         transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
         margin-bottom: 12px !important;
     }}
     [data-testid="stExpander"]:hover {{
-        border-color: #3F3F46 !important;
+        border-color: #FDE047 !important;
+        box-shadow: 0 0 16px rgba(250, 204, 21, 0.28), 0 4px 14px rgba(0, 0, 0, 0.5) !important;
     }}
     [data-testid="stExpander"] details {{
-        background-color: #0E0E10 !important;
+        border: none !important;
+        background-color: transparent !important;
         border-radius: 8px !important;
     }}
     [data-testid="stExpander"] summary {{
         background-color: #0E0E10 !important;
-        color: #A1A1AA !important;
+        color: #FFFFFF !important;
         font-size: 0.78rem !important;
         font-weight: 700 !important;
         letter-spacing: 1.2px !important;
@@ -297,8 +300,8 @@ css_content = f"""
         color: #FACC15 !important;
     }}
     [data-testid="stExpander"] summary svg {{
-        color: #71717A !important;
-        fill: #71717A !important;
+        color: #FACC15 !important;
+        fill: #FACC15 !important;
         transition: color 0.2s ease, fill 0.2s ease !important;
     }}
     [data-testid="stExpander"] summary:hover svg {{
@@ -2053,136 +2056,90 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# 8. Institutional Collapsible Watchlist & Style Panel
-active_count = len(st.session_state.active_tickers)
-with st.expander(
-    f"⚙️ Watchlist Configuration & Styling (Click to Expand)  •  {active_count} ASSETS MONITORED",
-    expanded=False,
-):
-    tab_assets, tab_styles = st.tabs(["PORTFOLIO ASSETS", "TYPOGRAPHY STYLE SHOWCASE"])
-
-    with tab_assets:
-        col_input, col_btn = st.columns([4, 1])
-        with col_input:
-            new_ticker = st.text_input(
-                "Search & Add Assets",
-                placeholder="Search company or fund name (e.g. Rolls Royce, Vanguard All World, Microsoft, Apple, NVDA)...",
-                label_visibility="collapsed",
-                key="asset_search_input",
-            )
-        with col_btn:
-            if st.button("Add Ticker", use_container_width=True):
-                if new_ticker.strip():
-                    formatted_ticker = new_ticker.strip().upper()
-                    if formatted_ticker in ["VWRP", "VWRL", "VUAG", "SMGB", "XNAQ", "EQQQ", "VUSA", "IITU"]:
-                        formatted_ticker = f"{formatted_ticker}.L"
-                    if formatted_ticker not in st.session_state.available_options:
-                        st.session_state.available_options.append(formatted_ticker)
-                    if formatted_ticker not in st.session_state.active_tickers:
-                        st.session_state.active_tickers.append(formatted_ticker)
-                    st.rerun()
-
-        # Dynamic Search Suggestions for Beginners
-        search_query = new_ticker.strip()
-        if len(search_query) >= 2:
-            suggestions = search_tickers(search_query)
-            if suggestions:
-                st.markdown(
-                    '<div style="font-size: 0.74rem; font-weight: 800; color: #FACC15; letter-spacing: 1px; margin: 10px 0 6px 0;">SEARCH SUGGESTIONS (CLICK TO ADD)</div>',
-                    unsafe_allow_html=True,
-                )
-                for idx, item in enumerate(suggestions[:5]):
-                    sym = item["symbol"]
-                    name = item["name"]
-                    qtype = item["type"]
-                    exch = item["exchange"]
-                    is_active = sym in st.session_state.active_tickers
-
-                    c_info, c_action = st.columns([4.2, 0.8])
-                    with c_info:
-                        st.markdown(
-                            f"""
-                            <div style="background: #141416; border: 1px solid #27272A; border-radius: 6px; padding: 7px 12px; margin-bottom: 4px; display: flex; align-items: center; justify-content: space-between;">
-                                <div style="display: flex; align-items: center; gap: 10px; overflow: hidden;">
-                                    <span style="font-weight: 800; color: #FACC15; font-size: 0.88rem; white-space: nowrap;">{sym}</span>
-                                    <span style="color: #FFFFFF; font-size: 0.82rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{name}</span>
-                                </div>
-                                <div style="font-size: 0.70rem; color: #888888; background: #1F1F24; padding: 2px 7px; border-radius: 4px; white-space: nowrap; margin-left: 8px;">{exch} • {qtype}</div>
-                            </div>
-                            """,
-                            unsafe_allow_html=True,
-                        )
-                    with c_action:
-                        btn_label = "✓ Added" if is_active else "+ Add"
-                        if st.button(
-                            btn_label,
-                            key=f"btn_add_sugg_{idx}_{sym}",
-                            use_container_width=True,
-                            disabled=is_active,
-                        ):
-                            if sym not in st.session_state.available_options:
-                                st.session_state.available_options.append(sym)
-                            if sym not in st.session_state.active_tickers:
-                                st.session_state.active_tickers.append(sym)
-                            st.rerun()
-
-        st.markdown(
-            '<div style="font-size: 0.74rem; font-weight: 800; color: #A1A1AA; letter-spacing: 1px; margin: 14px 0 6px 0;">ACTIVE WATCHLIST ASSETS</div>',
-            unsafe_allow_html=True,
-        )
-        selected = st.multiselect(
-            "Active Watchlist Assets",
-            options=st.session_state.available_options,
-            default=st.session_state.active_tickers,
+# 8. Institutional Collapsible Watchlist Manager
+with st.expander("Customise Watchlist", expanded=False):
+    col_input, col_btn = st.columns([4, 1])
+    with col_input:
+        new_ticker = st.text_input(
+            "Search & Add Assets",
+            placeholder="Search company or fund name (e.g. Rolls Royce, Vanguard All World, Microsoft, Apple, NVDA)...",
             label_visibility="collapsed",
+            key="asset_search_input",
         )
-        if selected != st.session_state.active_tickers:
-            st.session_state.active_tickers = selected
-            st.rerun()
+    with col_btn:
+        if st.button("Add Ticker", use_container_width=True):
+            if new_ticker.strip():
+                formatted_ticker = new_ticker.strip().upper()
+                if formatted_ticker in ["VWRP", "VWRL", "VUAG", "SMGB", "XNAQ", "EQQQ", "VUSA", "IITU"]:
+                    formatted_ticker = f"{formatted_ticker}.L"
+                if formatted_ticker not in st.session_state.available_options:
+                    st.session_state.available_options.append(formatted_ticker)
+                if formatted_ticker not in st.session_state.active_tickers:
+                    st.session_state.active_tickers.append(formatted_ticker)
+                st.rerun()
 
-        st.markdown(
-            '<div style="font-size: 0.73rem; color: #71717A; margin-top: 6px;">Note: London Stock Exchange tickers (<code>.L</code>) automatically detect pence (GBp) vs pounds (GBP) and format with £.</div>',
-            unsafe_allow_html=True,
-        )
+    # Dynamic Search Suggestions for Beginners
+    search_query = new_ticker.strip()
+    if len(search_query) >= 2:
+        suggestions = search_tickers(search_query)
+        if suggestions:
+            st.markdown(
+                '<div style="font-size: 0.74rem; font-weight: 800; color: #FACC15; letter-spacing: 1px; margin: 10px 0 6px 0;">SEARCH SUGGESTIONS (CLICK TO ADD)</div>',
+                unsafe_allow_html=True,
+            )
+            for idx, item in enumerate(suggestions[:5]):
+                sym = item["symbol"]
+                name = item["name"]
+                qtype = item["type"]
+                exch = item["exchange"]
+                is_active = sym in st.session_state.active_tickers
 
-    with tab_styles:
-        st.markdown(
-            '<div style="font-size: 0.8rem; color: #9CA3AF; margin-bottom: 12px;">Explore <b>10 serious institutional typefaces</b> used across financial newsrooms, exchange trading floors, and wealth management firms. Click <b>Apply Style</b> below any card to update the dashboard:</div>',
-            unsafe_allow_html=True,
-        )
-
-        preset_items = list(FONT_PRESETS.items())
-        total_presets = len(preset_items)
-        
-        # Render in rows of 5 cards
-        for row_start in range(0, total_presets, 5):
-            cols = st.columns(5)
-            for col_idx in range(5):
-                item_idx = row_start + col_idx
-                if item_idx < total_presets:
-                    p_name, p_info = preset_items[item_idx]
-                    with cols[col_idx]:
-                        is_active = p_name == st.session_state.card_font
-                        active_badge = " • ACTIVE" if is_active else ""
-                        border_color = "#FACC15" if is_active else "#27272A"
-                        btn_label = "✓ Current Style" if is_active else f"Apply {p_info['badge']}"
-
-                        sample_html = f"""
-                        <div style="background: #121214; border: 1px solid {border_color}; border-radius: 8px; padding: 12px 10px; text-align: center; font-family: {p_info['family']}; font-variant-numeric: tabular-nums;">
-                            <div style="font-size: 0.65rem; color: #FACC15; font-weight: 800; letter-spacing: 1px; margin-bottom: 6px;">{p_info['badge']}{active_badge}</div>
-                            <div style="font-size: {p_info['ticker_size']}; font-weight: {p_info['ticker_weight']}; color: #FACC15; letter-spacing: {p_info['letter_spacing']};">NVDA</div>
-                            <div style="font-size: 0.74rem; font-weight: 600; color: #F1F5F9; margin-bottom: 3px;">NVIDIA</div>
-                            <div style="font-size: {p_info['pct_size']}; font-weight: {p_info['pct_weight']}; color: #FFFFFF; margin: 2px 0;">+4.25%</div>
-                            <div style="font-size: {p_info['price_size']}; font-weight: {p_info['price_weight']}; color: #E2E8F0;">$142.50</div>
+                c_info, c_action = st.columns([4.2, 0.8])
+                with c_info:
+                    st.markdown(
+                        f"""
+                        <div style="background: #141416; border: 1px solid #27272A; border-radius: 6px; padding: 7px 12px; margin-bottom: 4px; display: flex; align-items: center; justify-content: space-between;">
+                            <div style="display: flex; align-items: center; gap: 10px; overflow: hidden;">
+                                <span style="font-weight: 800; color: #FACC15; font-size: 0.88rem; white-space: nowrap;">{sym}</span>
+                                <span style="color: #FFFFFF; font-size: 0.82rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{name}</span>
+                            </div>
+                            <div style="font-size: 0.70rem; color: #888888; background: #1F1F24; padding: 2px 7px; border-radius: 4px; white-space: nowrap; margin-left: 8px;">{exch} • {qtype}</div>
                         </div>
-                        <div style="font-size: 0.72rem; color: #888888; margin-top: 6px; min-height: 48px; line-height: 1.3;">{p_info['desc']}</div>
-                        """
-                        st.markdown(sample_html, unsafe_allow_html=True)
-                        if st.button(btn_label, key=f"btn_style_{item_idx}", use_container_width=True, disabled=is_active):
-                            st.session_state.card_font = p_name
-                            st.rerun()
+                        """,
+                        unsafe_allow_html=True,
+                    )
+                with c_action:
+                    btn_label = "✓ Added" if is_active else "+ Add"
+                    if st.button(
+                        btn_label,
+                        key=f"btn_add_sugg_{idx}_{sym}",
+                        use_container_width=True,
+                        disabled=is_active,
+                    ):
+                        if sym not in st.session_state.available_options:
+                            st.session_state.available_options.append(sym)
+                        if sym not in st.session_state.active_tickers:
+                            st.session_state.active_tickers.append(sym)
+                        st.rerun()
 
-            st.markdown('<div style="margin: 8px 0;"></div>', unsafe_allow_html=True)
+    st.markdown(
+        '<div style="font-size: 0.74rem; font-weight: 800; color: #A1A1AA; letter-spacing: 1px; margin: 14px 0 6px 0;">ACTIVE WATCHLIST ASSETS</div>',
+        unsafe_allow_html=True,
+    )
+    selected = st.multiselect(
+        "Active Watchlist Assets",
+        options=st.session_state.available_options,
+        default=st.session_state.active_tickers,
+        label_visibility="collapsed",
+    )
+    if selected != st.session_state.active_tickers:
+        st.session_state.active_tickers = selected
+        st.rerun()
+
+    st.markdown(
+        '<div style="font-size: 0.73rem; color: #71717A; margin-top: 6px;">Note: London Stock Exchange tickers (<code>.L</code>) automatically detect pence (GBp) vs pounds (GBP) and format with £.</div>',
+        unsafe_allow_html=True,
+    )
 
 # 9. Timeframe Switcher (Symmetrically Centered: 4 per row on mobile, full word labels)
 timeframe = st.radio(
