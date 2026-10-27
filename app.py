@@ -419,6 +419,45 @@ css_content = f"""
         color: #000000 !important;
     }}
 
+    /* Disable Downward Arrow & Clunky Dropdown Pop-Up on Multiselect */
+    .stExpander div[data-baseweb="select"] svg:not([data-baseweb="tag"] svg):not([data-tag] svg),
+    details div[data-baseweb="select"] svg:not([data-baseweb="tag"] svg):not([data-tag] svg),
+    [data-testid="stExpander"] div[data-baseweb="select"] svg:not([data-baseweb="tag"] svg):not([data-tag] svg),
+    [data-testid="stMultiSelect"] svg:not([data-baseweb="tag"] svg):not([data-tag] svg),
+    .stExpander div[data-baseweb="select"] > div > div:last-child,
+    details div[data-baseweb="select"] > div > div:last-child,
+    [data-testid="stExpander"] div[data-baseweb="select"] > div > div:last-child,
+    [data-testid="stMultiSelect"] div[data-baseweb="select"] > div > div:last-child {{
+        display: none !important;
+        visibility: hidden !important;
+        width: 0 !important;
+        height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        pointer-events: none !important;
+    }}
+    .stExpander div[data-baseweb="select"] input,
+    details div[data-baseweb="select"] input,
+    [data-testid="stMultiSelect"] input {{
+        display: none !important;
+        pointer-events: none !important;
+        width: 0 !important;
+        min-width: 0 !important;
+        opacity: 0 !important;
+        position: absolute !important;
+    }}
+    .stExpander div[data-baseweb="select"],
+    details div[data-baseweb="select"],
+    [data-testid="stMultiSelect"] div[data-baseweb="select"] {{
+        cursor: default !important;
+    }}
+    div[data-baseweb="popover"]:has([aria-multiselectable="true"]),
+    div[data-baseweb="popover"]:has(ul[role="listbox"][aria-multiselectable="true"]) {{
+        display: none !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+    }}
+
     /* Text Input Field Styling */
     [data-testid="stTextInput"] div[data-baseweb="input"],
     [data-testid="stTextInput"] div[data-baseweb="base-input"],
@@ -2167,7 +2206,7 @@ with st.expander("Customise Watchlist", expanded=False):
     )
     selected = st.multiselect(
         "Active Watchlist Assets",
-        options=st.session_state.available_options,
+        options=st.session_state.active_tickers,
         default=st.session_state.active_tickers,
         label_visibility="collapsed",
     )
@@ -2180,53 +2219,6 @@ with st.expander("Customise Watchlist", expanded=False):
         '<div style="font-size: 0.73rem; color: #71717A; margin-top: 6px;">Note: London Stock Exchange tickers (<code>.L</code>) automatically detect pence (GBp) vs pounds (GBP) and format with £.</div>',
         unsafe_allow_html=True,
     )
-
-    # Multi-User Private Link Generator
-    st.markdown('<div style="margin: 18px 0 10px 0; border-top: 1px solid #27272A;"></div>', unsafe_allow_html=True)
-    st.markdown(
-        f'<div style="font-size: 0.74rem; font-weight: 800; color: #FACC15; letter-spacing: 1px; margin-bottom: 4px;">'
-        f'CREATE PRIVATE WATCHLIST LINK FOR A FRIEND (CURRENT: <span style="color: #FFFFFF;">{current_profile.upper()}</span>)'
-        f'</div>',
-        unsafe_allow_html=True,
-    )
-    st.markdown(
-        '<div style="font-size: 0.75rem; color: #94A3B8; margin-bottom: 10px;">'
-        'Send your friend their own private link so they can add or remove stocks without altering yours:'
-        '</div>',
-        unsafe_allow_html=True,
-    )
-    c_friend_in, c_friend_btn = st.columns([3.5, 1.5])
-    with c_friend_in:
-        f_name_val = st.text_input(
-            "Friend Profile Name",
-            placeholder="Friend's name (e.g. alex, john, sam)...",
-            label_visibility="collapsed",
-            key="friend_name_input",
-        )
-    with c_friend_btn:
-        generate_clicked = st.button("Get Friend Link", use_container_width=True, key="gen_friend_link_btn")
-
-    target_friend = f_name_val.strip() if f_name_val.strip() else ("friend" if generate_clicked else "")
-    if target_friend:
-        clean_name = re.sub(r"[^a-zA-Z0-9_\-]", "", target_friend).strip().lower()
-        if clean_name:
-            # Dynamically determine host and protocol (works on localhost, LAN, or Streamlit Cloud)
-            req_host = ""
-            try:
-                req_host = st.context.headers.get("host", "")
-            except Exception:
-                pass
-            if not req_host or "localhost" in req_host:
-                req_host = "theinvestingdean-heatmap.streamlit.app"
-            proto = "https" if "streamlit.app" in req_host else "http"
-            friend_url = f"{proto}://{req_host}/?user={clean_name}"
-            st.code(friend_url, language="text")
-            st.markdown(
-                f'<div style="font-size: 0.72rem; color: #22C55E; font-weight: 600; margin-top: 4px;">'
-                f'✓ Dedicated link generated! Copy and send this link to <b>{clean_name.capitalize()}</b>. Any tickers they add or delete will stay strictly in their own profile.'
-                f'</div>',
-                unsafe_allow_html=True,
-            )
 
 # 9. Timeframe Switcher (Symmetrically Centered: 4 per row on mobile, full word labels)
 timeframe = st.radio(
