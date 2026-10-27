@@ -1,5 +1,7 @@
 import datetime
 import json
+import os
+import re
 import urllib.parse
 import urllib.request
 import numpy as np
@@ -191,15 +193,50 @@ if "available_options" not in st.session_state:
         )
     )
 
-if "active_tickers" not in st.session_state:
-    st.session_state.active_tickers = list(DEFAULT_TICKERS)
-else:
-    # Ensure newly added defaults are included for existing sessions
-    for _new_t in ["MSFT", "AAPL", "SKHY", "META"]:
-        if _new_t not in st.session_state.active_tickers:
-            st.session_state.active_tickers.append(_new_t)
-        if _new_t not in st.session_state.available_options:
-            st.session_state.available_options.append(_new_t)
+# Multi-User Private Profile & Watchlist Persistence
+WATCHLISTS_FILE = "watchlists.json"
+
+def get_current_profile_name() -> str:
+    raw_user = st.query_params.get("user", "dean")
+    if isinstance(raw_user, list):
+        raw_user = raw_user[0] if raw_user else "dean"
+    clean = re.sub(r"[^a-zA-Z0-9_\-]", "", str(raw_user)).strip().lower()
+    return clean if clean else "dean"
+
+def load_user_watchlist(profile: str, default_list: list) -> list:
+    if os.path.exists(WATCHLISTS_FILE):
+        try:
+            with open(WATCHLISTS_FILE, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                if profile in data and isinstance(data[profile], list) and len(data[profile]) > 0:
+                    return data[profile]
+        except Exception:
+            pass
+    return list(default_list)
+
+def save_user_watchlist(profile: str, tickers: list):
+    data = {}
+    if os.path.exists(WATCHLISTS_FILE):
+        try:
+            with open(WATCHLISTS_FILE, "r", encoding="utf-8") as f:
+                data = json.load(f)
+        except Exception:
+            data = {}
+    data[profile] = list(tickers)
+    try:
+        with open(WATCHLISTS_FILE, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2)
+    except Exception:
+        pass
+
+current_profile = get_current_profile_name()
+
+if "current_profile" not in st.session_state or st.session_state.current_profile != current_profile:
+    st.session_state.current_profile = current_profile
+    st.session_state.active_tickers = load_user_watchlist(current_profile, DEFAULT_TICKERS)
+    for _t in st.session_state.active_tickers:
+        if _t not in st.session_state.available_options:
+            st.session_state.available_options.append(_t)
 
 # Normalize any existing LSE tickers added without .L extension
 if "active_tickers" in st.session_state:
@@ -2076,6 +2113,7 @@ with st.expander("Customise Watchlist", expanded=False):
                     st.session_state.available_options.append(formatted_ticker)
                 if formatted_ticker not in st.session_state.active_tickers:
                     st.session_state.active_tickers.append(formatted_ticker)
+                save_user_watchlist(st.session_state.current_profile, st.session_state.active_tickers)
                 st.rerun()
 
     # Dynamic Search Suggestions for Beginners
@@ -2120,6 +2158,7 @@ with st.expander("Customise Watchlist", expanded=False):
                             st.session_state.available_options.append(sym)
                         if sym not in st.session_state.active_tickers:
                             st.session_state.active_tickers.append(sym)
+                        save_user_watchlist(st.session_state.current_profile, st.session_state.active_tickers)
                         st.rerun()
 
     st.markdown(
@@ -2134,12 +2173,60 @@ with st.expander("Customise Watchlist", expanded=False):
     )
     if selected != st.session_state.active_tickers:
         st.session_state.active_tickers = selected
+        save_user_watchlist(st.session_state.current_profile, selected)
         st.rerun()
 
     st.markdown(
         '<div style="font-size: 0.73rem; color: #71717A; margin-top: 6px;">Note: London Stock Exchange tickers (<code>.L</code>) automatically detect pence (GBp) vs pounds (GBP) and format with £.</div>',
         unsafe_allow_html=True,
     )
+
+    # Multi-User Private Link Generator
+    st.markdown('<div style="margin: 18px 0 10px 0; border-top: 1px solid #27272A;"></div>', unsafe_allow_html=True)
+    st.markdown(
+        f'<div style="font-size: 0.74rem; font-weight: 800; color: #FACC15; letter-spacing: 1px; margin-bottom: 4px;">'
+        f'CREATE PRIVATE WATCHLIST LINK FOR A FRIEND (CURRENT: <span style="color: #FFFFFF;">{current_profile.upper()}</span>)'
+        f'</div>',
+        unsafe_allow_html=True,
+    )
+    st.markdown(
+        '<div style="font-size: 0.75rem; color: #94A3B8; margin-bottom: 10px;">'
+        'Send your friend their own private link so they can add or remove stocks without altering yours:'
+        '</div>',
+        unsafe_allow_html=True,
+    )
+    c_friend_in, c_friend_btn = st.columns([3.5, 1.5])
+    with c_friend_in:
+        f_name_val = st.text_input(
+            "Friend Profile Name",
+            placeholder="Friend's name (e.g. alex, john, sam)...",
+            label_visibility="collapsed",
+            key="friend_name_input",
+        )
+    with c_friend_btn:
+        generate_clicked = st.button("Get Friend Link", use_container_width=True, key="gen_friend_link_btn")
+
+    target_friend = f_name_val.strip() if f_name_val.strip() else ("friend" if generate_clicked else "")
+    if target_friend:
+        clean_name = re.sub(r"[^a-zA-Z0-9_\-]", "", target_friend).strip().lower()
+        if clean_name:
+            # Dynamically determine host and protocol (works on localhost, LAN, or Streamlit Cloud)
+            req_host = ""
+            try:
+                req_host = st.context.headers.get("host", "")
+            except Exception:
+                pass
+            if not req_host or "localhost" in req_host:
+                req_host = "theinvestingdean-heatmap.streamlit.app"
+            proto = "https" if "streamlit.app" in req_host else "http"
+            friend_url = f"{proto}://{req_host}/?user={clean_name}"
+            st.code(friend_url, language="text")
+            st.markdown(
+                f'<div style="font-size: 0.72rem; color: #22C55E; font-weight: 600; margin-top: 4px;">'
+                f'✓ Dedicated link generated! Copy and send this link to <b>{clean_name.capitalize()}</b>. Any tickers they add or delete will stay strictly in their own profile.'
+                f'</div>',
+                unsafe_allow_html=True,
+            )
 
 # 9. Timeframe Switcher (Symmetrically Centered: 4 per row on mobile, full word labels)
 timeframe = st.radio(
