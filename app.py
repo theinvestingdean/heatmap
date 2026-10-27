@@ -1183,12 +1183,77 @@ css_content = f"""
         box-sizing: border-box !important;
     }}
 
+    /* Header Title & Subtitle */
+    .main-title {{
+        margin: 15px 0 0 0 !important;
+        font-size: 2.3rem !important;
+        font-weight: 800 !important;
+        color: #FFFFFF !important;
+        letter-spacing: -0.5px !important;
+        line-height: 1.15 !important;
+    }}
+    .title-line-1 {{
+        display: inline;
+    }}
+    .title-line-2 {{
+        display: inline;
+        margin-left: 0.25em;
+    }}
+    .main-subtitle {{
+        margin: 4px 0 0 0 !important;
+        color: #888888 !important;
+        font-size: 0.82rem !important;
+        letter-spacing: 2px !important;
+        font-weight: 600 !important;
+        line-height: 1.35 !important;
+    }}
+    .sub-line-1 {{
+        display: inline;
+    }}
+    .sub-line-2 {{
+        display: inline;
+        margin-left: 0.35em;
+    }}
+
     /* Mobile Modal & Viewport Lock */
     @media (max-width: 600px) {{
         html, body, .stApp, [data-testid="stAppViewContainer"], .main {{
             overflow-x: hidden !important;
             max-width: 100vw !important;
             width: 100vw !important;
+        }}
+
+        /* Force Title & Subtitle 2-line break on all mobile screens */
+        .main-title {{
+            font-size: clamp(1.45rem, 6.8vw, 1.95rem) !important;
+            line-height: 1.18 !important;
+            margin: 10px 0 0 0 !important;
+        }}
+        .title-line-1 {{
+            display: block !important;
+            white-space: nowrap !important;
+        }}
+        .title-line-2 {{
+            display: block !important;
+            white-space: nowrap !important;
+            margin-left: 0 !important;
+            margin-top: 2px !important;
+        }}
+        .main-subtitle {{
+            font-size: clamp(0.60rem, 2.5vw, 0.72rem) !important;
+            letter-spacing: 1.5px !important;
+            margin-top: 6px !important;
+            line-height: 1.35 !important;
+        }}
+        .sub-line-1 {{
+            display: block !important;
+            white-space: nowrap !important;
+        }}
+        .sub-line-2 {{
+            display: block !important;
+            white-space: nowrap !important;
+            margin-left: 0 !important;
+            margin-top: 1px !important;
         }}
 
         /* Fullscreen scrollable backdrop for mobile dialog */
@@ -1979,8 +2044,8 @@ if clicked_stock:
 st.markdown(
     """
     <div style="text-align: center; margin-bottom: 16px;">
-        <h1 style="margin: 15px 0 0 0; font-size: 2.3rem; font-weight: 800; color: #FFFFFF; letter-spacing: -0.5px;">The Investing Dean Heat Map</h1>
-        <p style="margin: 4px 0 0 0; color: #888888; font-size: 0.82rem; letter-spacing: 2px; font-weight: 600;">INSTITUTIONAL MULTI-ASSET REAL-TIME VISUALISER</p>
+        <h1 class="main-title"><span class="title-line-1">The Investing Dean</span><span class="title-line-2">Heat Map</span></h1>
+        <p class="main-subtitle"><span class="sub-line-1">INSTITUTIONAL MULTI-ASSET REAL-TIME</span><span class="sub-line-2">VISUALISER</span></p>
     </div>
     """,
     unsafe_allow_html=True,
