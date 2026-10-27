@@ -395,6 +395,12 @@ css_content = f"""
         border: 1px solid #EAB308 !important;
         border-radius: 4px !important;
         font-weight: 700 !important;
+        font-size: 0.80rem !important;
+        line-height: 1.2 !important;
+        padding-top: 2px !important;
+        padding-bottom: 2px !important;
+        margin: 3px 4px 3px 0 !important;
+        max-width: 100% !important;
     }}
     [data-testid="stMultiSelect"] [data-tag] span,
     [data-testid="stMultiSelectTagsContainer"] [data-tag] span,
@@ -404,11 +410,18 @@ css_content = f"""
     span[data-baseweb="tag"] span {{
         color: #000000 !important;
         font-weight: 700 !important;
+        max-width: 250px !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        white-space: nowrap !important;
     }}
     [data-testid="stMultiSelect"] [data-tag] button,
     [data-testid="stMultiSelectTagsContainer"] [data-tag] button,
-    [data-tag] button {{
+    [data-tag] button,
+    div[data-baseweb="tag"] [role="button"],
+    span[data-baseweb="tag"] [role="button"] {{
         color: #000000 !important;
+        cursor: pointer !important;
     }}
     [data-testid="stMultiSelect"] [data-tag] svg,
     [data-testid="stMultiSelectTagsContainer"] [data-tag] svg,
@@ -1441,6 +1454,40 @@ css_content = f"""
             box-sizing: border-box !important;
         }}
     }}
+
+    /* Instagram Brand Badge Button */
+    .instagram-brand-btn {{
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 8px !important;
+        background-color: #FACC15 !important;
+        color: #0F172A !important;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+        font-weight: 800 !important;
+        font-size: 0.95rem !important;
+        letter-spacing: -0.01em !important;
+        padding: 8px 18px !important;
+        border-radius: 8px !important;
+        border: 1px solid #EAB308 !important;
+        text-decoration: none !important;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3) !important;
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    }}
+    .instagram-brand-btn:hover {{
+        background-color: #EAB308 !important;
+        transform: translateY(-2px) !important;
+        box-shadow: 0 6px 16px rgba(250, 204, 21, 0.45) !important;
+        color: #000000 !important;
+    }}
+    .instagram-brand-btn svg {{
+        stroke: #0F172A !important;
+        transition: transform 0.2s ease !important;
+    }}
+    .instagram-brand-btn:hover svg {{
+        stroke: #000000 !important;
+        transform: scale(1.08) !important;
+    }}
 </style>
 """
 
@@ -1550,6 +1597,74 @@ def format_display_name(ticker, info):
         if raw.endswith(suffix):
             raw = raw[:-len(suffix)]
     return raw.strip()
+
+# Curated Short Names for Watchlist Chips (Solution 1)
+WATCHLIST_DISPLAY_NAMES = {
+    # Tech Giants & US Equities
+    "NVDA": "Nvidia (NVDA)",
+    "TSLA": "Tesla (TSLA)",
+    "PLTR": "Palantir (PLTR)",
+    "AMD": "AMD (AMD)",
+    "ARM": "Arm (ARM)",
+    "AVGO": "Broadcom (AVGO)",
+    "ALAB": "Astera Labs (ALAB)",
+    "ASML": "ASML (ASML)",
+    "GOOG": "Google (GOOG)",
+    "GOOGL": "Google (GOOGL)",
+    "MRVL": "Marvell (MRVL)",
+    "MU": "Micron (MU)",
+    "TSM": "TSMC (TSM)",
+    "MSFT": "Microsoft (MSFT)",
+    "AAPL": "Apple (AAPL)",
+    "SKHY": "SK hynix (SKHY)",
+    "AMZN": "Amazon (AMZN)",
+    "META": "Meta (META)",
+    "MSTR": "MicroStrategy (MSTR)",
+
+    # Private Assets / Special (SpaceX - strictly confirmed)
+    "SPCX": "SpaceX (SPCX)",
+
+    # Crypto
+    "BTC-USD": "Bitcoin (BTC)",
+    "ETH-USD": "Ethereum (ETH)",
+    "SOL-USD": "Solana (SOL)",
+
+    # US ETFs
+    "QQQ": "Nasdaq 100 (QQQ)",
+    "SPY": "S&P 500 (SPY)",
+    "SMH": "VanEck Semi (SMH)",
+    "SOXX": "iShares Semi (SOXX)",
+
+    # UK / London Stock Exchange ETFs & Equities
+    "VWRP.L": "Vanguard All-World (VWRP)",
+    "VWRL.L": "Vanguard All-World (VWRL)",
+    "VWRD.L": "Vanguard All-World (VWRD)",
+    "VUAG.L": "Vanguard S&P 500 (VUAG)",
+    "VUSA.L": "Vanguard S&P 500 (VUSA)",
+    "SMGB.L": "VanEck Semi (SMGB)",
+    "XNAQ.L": "Nasdaq 100 (XNAQ)",
+    "EQQQ.L": "Invesco EQQQ (EQQQ)",
+    "IITU.L": "iShares US Tech (IITU)",
+    "RR.L": "Rolls-Royce (RR)",
+    "BA.L": "BAE Systems (BA)",
+    "AZN.L": "AstraZeneca (AZN)",
+    "SHEL.L": "Shell (SHEL)",
+    "BP.L": "BP (BP)",
+    "HSBA.L": "HSBC (HSBA)",
+    "ULVR.L": "Unilever (ULVR)",
+}
+
+def format_watchlist_chip(ticker: str) -> str:
+    """Format active watchlist multiselect chips with clean brand names and ticker (Solution 1)."""
+    t_clean = str(ticker).strip()
+    t_up = t_clean.upper()
+    if t_up in WATCHLIST_DISPLAY_NAMES:
+        return WATCHLIST_DISPLAY_NAMES[t_up]
+    if t_up in KNOWN_ASSET_NAMES:
+        base = KNOWN_ASSET_NAMES[t_up]
+        short_t = t_up.replace(".L", "")
+        return f"{base} ({short_t})"
+    return t_clean
 
 # Interactive Ticker & Company Search Functionality
 @st.cache_data(ttl=300)
@@ -2121,12 +2236,12 @@ if clicked_stock:
     show_stock_breakdown_dialog(clicked_stock)
 
 
-# 7. Header (UK English: INSTITUTIONAL MULTI-ASSET REAL-TIME VISUALISER)
+# 7. Header (UK English: REAL-TIME MULTI-ASSET TRACKER)
 st.markdown(
     """
     <div style="text-align: center; margin-bottom: 16px;">
         <h1 class="main-title"><span class="title-line-1">The Investing Dean</span><span class="title-line-2">Heat Map</span></h1>
-        <p class="main-subtitle"><span class="sub-line-1">INSTITUTIONAL MULTI-ASSET REAL-TIME</span><span class="sub-line-2">VISUALISER</span></p>
+        <p class="main-subtitle"><span class="sub-line-1">REAL-TIME MULTI-ASSET</span><span class="sub-line-2">TRACKER</span></p>
     </div>
     """,
     unsafe_allow_html=True,
@@ -2208,6 +2323,7 @@ with st.expander("Customise Watchlist", expanded=False):
         "Active Watchlist Assets",
         options=st.session_state.active_tickers,
         default=st.session_state.active_tickers,
+        format_func=format_watchlist_chip,
         label_visibility="collapsed",
     )
     if selected != st.session_state.active_tickers:
@@ -2481,17 +2597,27 @@ def _render_heatmap_grid_core(
         unsafe_allow_html=True,
     )
 
-    # Colour Scale Footer (UK English)
+    # Colour Scale Footer (UK English) & Creator Brand Link
     st.markdown(
         f"""
-        <div style="text-align: center; margin-top: 14px; margin-bottom: 20px;">
+        <div style="text-align: center; margin-top: 14px; margin-bottom: 24px;">
             <div style="display: inline-block; width: 280px; height: 6px; background: linear-gradient(90deg, #991b1b 0%, #222222 50%, #15803d 100%); border-radius: 3px;"></div>
             <div style="display: flex; justify-content: space-between; width: 280px; margin: 4px auto 0 auto; font-size: 0.72rem; color: #888888;">
                 <span>≤ -5%</span>
                 <span>0%</span>
                 <span>≥ +5%</span>
             </div>
-            <p style="color: #666666; font-size: 0.75rem; margin-top: 6px;">Full red to full green at -5% to +5% for {timeframe}. Grey = not available.</p>
+            <p style="color: #666666; font-size: 0.75rem; margin-top: 6px; margin-bottom: 24px;">Full red to full green at -5% to +5% for {timeframe}. Grey = not available.</p>
+            <div style="display: flex; justify-content: center; align-items: center; margin-top: 8px; margin-bottom: 12px;">
+                <a href="https://www.instagram.com/theinvestingdean/" target="_blank" rel="noopener noreferrer" class="instagram-brand-btn" title="Follow @theinvestingdean on Instagram">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                        <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                        <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                    </svg>
+                    <span>@theinvestingdean</span>
+                </a>
+            </div>
         </div>
         """,
         unsafe_allow_html=True,
